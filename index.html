@@ -4,29 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>صفحة التصويت</title>
-    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+    <script src="script.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>اختر الفريق الذي سيجيب أولاً</h1>
+        <h1>اختر فريقك</h1>
         
         <div id="teamSelection">
-            <button id="teamOneSelect" class="team-select-button">فريق 1: <span id="teamOneName"></span></button>
-            <button id="teamTwoSelect" class="team-select-button">فريق 2: <span id="teamTwoName"></span></button>
+            <button id="teamOneVote" class="team-select-button" onclick="vote('teamOne')">فريق 1: <span id="teamOneName"></span></button>
+            <button id="teamTwoVote" class="team-select-button" onclick="vote('teamTwo')">فريق 2: <span id="teamTwoName"></span></button>
         </div>
-
-        <div id="questionInfo" style="display: none;">
-            <h2>معلومات السؤال</h2>
-            <p>قيمة السؤال: <span id="questionPoints"></span> نقطة</p>
-            <p>فئة السؤال: <span id="questionCategory"></span></p>
-        </div>
-
+        
         <div id="voteSection" style="display: none;">
             <h2 id="selectedTeamHeader">تصويت لفريقك</h2>
             <button id="voteButton" class="vote-button">التصويت الآن</button>
         </div>
         
         <p id="voteResult"></p>
+        
+        <p id="questionPoints"></p>
+        <p id="questionCategory"></p>
     </div>
 
     <script src="script.js"></script>
