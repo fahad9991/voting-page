@@ -19,15 +19,9 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
     <script>
-        // استخراج القيم من الرابط
+        // استخراج gameId من الرابط
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
-        const points = urlParams.get('points');
-        const category = urlParams.get('category');
-
-        // عرض المعلومات المستلمة على الصفحة
-        document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
-        document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
 
         // Firebase configuration
         const firebaseConfig = {
@@ -42,6 +36,25 @@
 
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
+
+        // الاستماع إلى التغييرات في بيانات السؤال
+        const questionDocRef = db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData");
+
+        questionDocRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const points = data.points;
+                const category = data.category;
+
+                // تحديث القيم في الصفحة
+                document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
+                document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+            } else {
+                console.log("No such document!");
+            }
+        }, (error) => {
+            console.log("Error getting document:", error);
+        });
 
         function vote(team) {
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
