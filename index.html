@@ -19,7 +19,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
     <script>
-        // استخراج gameId من الرابط
+        // استخراج القيم من الرابط
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
 
@@ -37,24 +37,21 @@
         const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // الاستماع إلى التغييرات في بيانات السؤال
-        const questionDocRef = db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData");
+        function fetchCurrentQuestionData() {
+            const questionRef = db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData");
 
-        questionDocRef.onSnapshot((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                const points = data.points;
-                const category = data.category;
-
-                // تحديث القيم في الصفحة
-                document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
-                document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
-            } else {
-                console.log("No such document!");
-            }
-        }, (error) => {
-            console.log("Error getting document:", error);
-        });
+            questionRef.get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${data.points} نقطة`;
+                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${data.category}`;
+                } else {
+                    console.log("No current question found.");
+                }
+            }).catch((error) => {
+                console.error("Error fetching current question data:", error);
+            });
+        }
 
         function vote(team) {
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
@@ -79,6 +76,12 @@
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
             });
         }
+
+        // تحديث البيانات تلقائيًا عند تحميل الصفحة
+        fetchCurrentQuestionData();
+        
+        // تحديث البيانات تلقائيًا كل 5 ثوانٍ
+        setInterval(fetchCurrentQuestionData, 5000);
     </script>
 </body>
 </html>
