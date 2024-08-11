@@ -8,11 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <h1>اختر فريقك</h1>
+        <h1>اختر الفريق الذي سيجيب أولاً</h1>
         
         <div id="teamSelection">
-            <button id="teamOneSelect" class="team-select-button">فريق 1: <span id="teamOneName"></span></button>
-            <button id="teamTwoSelect" class="team-select-button">فريق 2: <span id="teamTwoName"></span></button>
+            <button id="teamOneVote" class="team-select-button"></button>
+            <button id="teamTwoVote" class="team-select-button"></button>
         </div>
         
         <div id="voteSection" style="display: none;">
@@ -21,10 +21,13 @@
         </div>
         
         <p id="voteResult"></p>
+
+        <h3>الفئة: <span id="category"></span></h3>
+        <h3>قيمة السؤال: <span id="points"></span> نقطة</h3>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
