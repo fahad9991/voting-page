@@ -9,68 +9,64 @@ const firebaseConfig = {
     appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
 };
 
+
 // Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+
+// Get Firestore instance
 const db = firebase.firestore();
 
+// Extract gameId from the URL
 const urlParams = new URLSearchParams(window.location.search);
 const gameId = urlParams.get('gameId');
 
-document.addEventListener('DOMContentLoaded', function() {
-    const teamOneNameElem = document.getElementById('teamOneName');
-    const teamTwoNameElem = document.getElementById('teamTwoName');
-    const questionPointsElem = document.getElementById('questionPoints');
-    const questionCategoryElem = document.getElementById('questionCategory');
-    const questionInfoElem = document.getElementById('questionInfo');
-    const voteSectionElem = document.getElementById('voteSection');
-    let selectedTeam = '';
+// References to DOM elements
+const teamOneNameSpan = document.getElementById('teamOneName');
+const teamTwoNameSpan = document.getElementById('teamTwoName');
+const teamOneVoteButton = document.getElementById('teamOneVote');
+const teamTwoVoteButton = document.getElementById('teamTwoVote');
+const voteResult = document.getElementById('voteResult');
 
-    // Fetch game data
-    db.collection('games').doc(gameId).get().then(doc => {
-        if (doc.exists) {
-            const gameData = doc.data();
-            teamOneNameElem.textContent = gameData.teamOneName;
-            teamTwoNameElem.textContent = gameData.teamTwoName;
-
-            if (gameData.currentQuestion) {
-                questionPointsElem.textContent = gameData.currentQuestion.points;
-                questionCategoryElem.textContent = gameData.currentQuestion.category;
-                questionInfoElem.style.display = 'block';
-            }
-        } else {
-            console.log('No such document!');
-        }
-    }).catch(error => {
-        console.log('Error getting document:', error);
-    });
-
-    document.getElementById('teamOneSelect').addEventListener('click', function() {
-        selectedTeam = 'teamOne';
-        voteSectionElem.style.display = 'block';
-        document.getElementById('selectedTeamHeader').textContent = `التصويت لفريق ${teamOneNameElem.textContent}`;
-    });
-
-    document.getElementById('teamTwoSelect').addEventListener('click', function() {
-        selectedTeam = 'teamTwo';
-        voteSectionElem.style.display = 'block';
-        document.getElementById('selectedTeamHeader').textContent = `التصويت لفريق ${teamTwoNameElem.textContent}`;
-    });
-
-    document.getElementById('voteButton').addEventListener('click', function() {
-        if (!selectedTeam) return;
-
-        const votesRef = db.collection('games').doc(gameId).collection('votes');
-        votesRef.get().then(snapshot => {
-            if (snapshot.empty) {
-                votesRef.add({ team: selectedTeam }).then(() => {
-                    document.getElementById('voteResult').textContent = `تم التصويت لفريق ${selectedTeam === 'teamOne' ? teamOneNameElem.textContent : teamTwoNameElem.textContent} بنجاح!`;
-                });
-            } else {
-                document.getElementById('voteResult').textContent = 'تم التصويت بالفعل!';
-            }
-        }).catch(error => {
-            console.error('Error voting:', error);
-            document.getElementById('voteResult').textContent = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
-        });
-    });
+// Fetch game data and update team names
+db.collection("games").doc(gameId).get().then((doc) => {
+    if (doc.exists) {
+        const gameData = doc.data();
+        teamOneNameSpan.innerText = gameData.teamOneName;
+        teamTwoNameSpan.innerText = gameData.teamTwoName;
+    } else {
+        console.log("No such document!");
+    }
+}).catch((error) => {
+    console.log("Error getting document:", error);
 });
+
+// Voting logic
+teamOneVoteButton.addEventListener('click', function() {
+    vote('teamOne');
+});
+
+teamTwoVoteButton.addEventListener('click', function() {
+    vote('teamTwo');
+});
+
+function vote(team) {
+    const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
+
+    voteRef.get().then((doc) => {
+        if (doc.exists) {
+            voteResult.innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
+        } else {
+            voteRef.set({ team: team }).then(() => {
+                voteResult.innerText = `تم التصويت لفريق ${team === 'teamOne' ? '1' : '2'} بنجاح!`;
+                document.getElementById('teamOneVote').disabled = true;
+                document.getElementById('teamTwoVote').disabled = true;
+            }).catch((error) => {
+                console.error("Error voting:", error);
+                voteResult.innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
+            });
+        }
+    }).catch((error) => {
+        console.error("Error checking vote:", error);
+        voteResult.innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
+    });
+}
