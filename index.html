@@ -8,9 +8,18 @@
 </head>
 <body>
     <div class="container">
-        <h1>اختر الفريق الذي سيجيب أولاً</h1>
-        <button id="teamOneVote" class="vote-button">فريق 1</button>
-        <button id="teamTwoVote" class="vote-button">فريق 2</button>
+        <h1>اختر فريقك</h1>
+        
+        <div id="teamSelection">
+            <button id="teamOneSelect" class="team-select-button">فريق 1: <span id="teamOneName"></span></button>
+            <button id="teamTwoSelect" class="team-select-button">فريق 2: <span id="teamTwoName"></span></button>
+        </div>
+        
+        <div id="voteSection" style="display: none;">
+            <h2 id="selectedTeamHeader">تصويت لفريقك</h2>
+            <button id="voteButton" class="vote-button">التصويت الآن</button>
+        </div>
+        
         <p id="voteResult"></p>
     </div>
 
