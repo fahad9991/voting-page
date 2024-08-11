@@ -54,19 +54,22 @@ function vote(team) {
 
     voteRef.get().then((doc) => {
         if (doc.exists) {
+            console.log("Vote already exists, team: ", doc.data().team);
             voteResult.innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
         } else {
             voteRef.set({ team: team }).then(() => {
+                console.log("Vote recorded for team: ", team);
                 voteResult.innerText = `تم التصويت لفريق ${team === 'teamOne' ? '1' : '2'} بنجاح!`;
                 document.getElementById('teamOneVote').disabled = true;
                 document.getElementById('teamTwoVote').disabled = true;
             }).catch((error) => {
-                console.error("Error voting:", error);
+                console.error("Error recording vote:", error);
                 voteResult.innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
             });
         }
     }).catch((error) => {
-        console.error("Error checking vote:", error);
+        console.error("Error checking vote existence:", error);
         voteResult.innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
     });
 }
+
