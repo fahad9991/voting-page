@@ -11,23 +11,24 @@
         <h1>اختر الفريق الذي سيجيب أولاً</h1>
         
         <div id="teamSelection">
-            <button id="teamOneVote" class="team-select-button"></button>
-            <button id="teamTwoVote" class="team-select-button"></button>
+            <button id="teamOneSelect" class="team-select-button">فريق 1: <span id="teamOneName"></span></button>
+            <button id="teamTwoSelect" class="team-select-button">فريق 2: <span id="teamTwoName"></span></button>
         </div>
-        
+
+        <div id="questionInfo" style="display: none;">
+            <h2>معلومات السؤال</h2>
+            <p>قيمة السؤال: <span id="questionPoints"></span> نقطة</p>
+            <p>فئة السؤال: <span id="questionCategory"></span></p>
+        </div>
+
         <div id="voteSection" style="display: none;">
             <h2 id="selectedTeamHeader">تصويت لفريقك</h2>
             <button id="voteButton" class="vote-button">التصويت الآن</button>
         </div>
         
         <p id="voteResult"></p>
-
-        <h3>الفئة: <span id="category"></span></h3>
-        <h3>قيمة السؤال: <span id="points"></span> نقطة</h3>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
