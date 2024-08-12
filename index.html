@@ -73,9 +73,9 @@
         <p id="voteResult"></p>
     </div>
 
-    <!-- JavaScript الخاص بالتصويت وعرض المعلومات -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <!-- تحميل مكتبات Firebase بشكل صحيح -->
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script>
         // استخراج القيم من الرابط
         const urlParams = new URLSearchParams(window.location.search);
@@ -92,7 +92,7 @@
             appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
 
-        const app = firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         // جلب بيانات السؤال الحالي وتحديث الصفحة
