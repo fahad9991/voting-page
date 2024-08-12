@@ -85,9 +85,11 @@
 
 <body>
     <div class="container">
-        <h1>التصويت للسؤال الحالي</h1>
+              <h1>التصويت للسؤال الحالي</h1>
         <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         <p id="questionCategory">فئة السؤال: ...</p>
+
+        <p id="playerNameDisplay">اسمك: ...</p> <!-- إضافة عرض الاسم -->
 
         <button id="voteButton" onclick="vote()">تصويت</button>
 
@@ -100,8 +102,11 @@
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
         const team = urlParams.get('team');
+        const playerName = urlParams.get('playerName');
 
-        const firebaseConfig = {
+        document.getElementById('playerNameDisplay').innerText = `اسمك: ${playerName}`;
+
+    const firebaseConfig = {
             apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
             authDomain: "triviakw-dfe7f.firebaseapp.com",
             databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
@@ -145,7 +150,7 @@
                     console.log("Vote already exists, team: ", doc.data().team);
                     document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
                 } else {
-                    voteRef.set({ team: team }).then(() => {
+                    voteRef.set({ team: team, playerName: playerName }).then(() => {
                         console.log("Vote recorded for team: ", team);
                         document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
                         disableVoteButton();
@@ -169,21 +174,8 @@
             document.getElementById('voteButton').disabled = true;
         }
 
-        // منع التكبير بواسطة جميع الأشكال
+        // منع تكبير الصفحة
         document.addEventListener('gesturestart', function (e) {
-            e.preventDefault();
-        });
-        document.addEventListener('touchmove', function (e) {
-            if (e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        // منع النسخ أو التحديد
-        document.addEventListener('selectstart', function (e) {
-            e.preventDefault();
-        });
-        document.addEventListener('copy', function (e) {
             e.preventDefault();
         });
     </script>
