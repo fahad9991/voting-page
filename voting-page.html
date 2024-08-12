@@ -2,8 +2,8 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>التصويت</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>ال١٢٣تصويت</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -11,6 +11,7 @@
             color: #333;
             text-align: center;
             padding: 20px;
+            touch-action: manipulation; /* منع التكبير */
         }
 
         h1 {
@@ -26,7 +27,7 @@
 
         button {
             background-color: #3498db;
-            color: black;
+            color: white;
             border: none;
             padding: 15px 30px;
             font-size: 1.2em;
@@ -64,7 +65,6 @@
         }
     </style>
 </head>
-
 
 <body>
     <div class="container">
@@ -151,6 +151,11 @@
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
         }
+
+        // منع تكبير الصفحة
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html>
