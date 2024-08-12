@@ -11,7 +11,7 @@
             color: #333;
             text-align: center;
             padding: 20px;
-            touch-action: none; /* منع التكبير باللمس */
+            touch-action: none;
             -ms-touch-action: none;
             -webkit-touch-action: none;
         }
@@ -20,6 +20,16 @@
             color: #2c3e50;
             font-size: 2.5em;
             margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            width: 80%;
+            max-width: 300px;
+            border: 2px solid #3498db;
+            border-radius: 5px;
         }
 
         button {
@@ -42,6 +52,8 @@
 <body>
     <h1>اختر فريقك للتصويت</h1>
 
+    <input type="text" id="playerName" placeholder="أدخل اسمك هنا" />
+
     <button id="teamOneButton">التصويت لفريق 1</button>
     <button id="teamTwoButton">التصويت لفريق 2</button>
 
@@ -50,12 +62,23 @@
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
 
-        // تعيين روابط الأزرار بناءً على gameId
+        // تعيين روابط الأزرار بناءً على gameId والاسم المدخل
         document.getElementById('teamOneButton').onclick = function() {
-            window.location.href = 'voting-page.html?team=teamOne&gameId=' + gameId;
+            const playerName = document.getElementById('playerName').value;
+            if (playerName) {
+                window.location.href = 'voting-page.html?team=teamOne&gameId=' + gameId + '&playerName=' + encodeURIComponent(playerName);
+            } else {
+                alert('يرجى إدخال اسمك قبل التصويت.');
+            }
         };
+
         document.getElementById('teamTwoButton').onclick = function() {
-            window.location.href = 'voting-page.html?team=teamTwo&gameId=' + gameId;
+            const playerName = document.getElementById('playerName').value;
+            if (playerName) {
+                window.location.href = 'voting-page.html?team=teamTwo&gameId=' + gameId + '&playerName=' + encodeURIComponent(playerName);
+            } else {
+                alert('يرجى إدخال اسمك قبل التصويت.');
+            }
         };
     </script>
 </body>
