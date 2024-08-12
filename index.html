@@ -9,70 +9,69 @@
             font-family: 'Arial', sans-serif;
             background-color: #f4f4f4;
             color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
+            text-align: center;
             padding: 20px;
         }
 
         h1 {
-            font-size: 2em;
-            color: #007BFF;
+            color: #2c3e50;
+            font-size: 2.5em;
             margin-bottom: 20px;
         }
 
         p {
             font-size: 1.2em;
-            margin-bottom: 20px;
+            margin: 10px 0;
         }
 
         button {
-            font-size: 1.2em;
-            padding: 10px 20px;
-            margin: 10px;
+            background-color: #3498db;
+            color: white;
             border: none;
-            border-radius: 5px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            margin: 10px;
             cursor: pointer;
+            border-radius: 8px;
             transition: background-color 0.3s ease;
         }
 
-        #teamOneVote {
-            background-color: #28a745;
-            color: white;
+        button:hover {
+            background-color: #2980b9;
         }
 
-        #teamOneVote:hover {
-            background-color: #218838;
-        }
-
-        #teamTwoVote {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        #teamTwoVote:hover {
-            background-color: #c82333;
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
         }
 
         #voteResult {
-            font-size: 1.2em;
             margin-top: 20px;
-            color: #555;
+            font-size: 1.3em;
+            color: #e74c3c;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
 <body>
-    <h1>التصويت للسؤال الحالي</h1>
-    <p id="questionPoints">قيمة السؤال: ... نقطة</p>
-    <p id="questionCategory">فئة السؤال: ...</p>
+    <div class="container">
+        <h1>التصويت للسؤال الحالي</h1>
+        <p id="questionPoints">قيمة السؤال: ... نقطة</p>
+        <p id="questionCategory">فئة السؤال: ...</p>
 
-    <button id="teamOneVote" onclick="vote('teamOne')">تصويت لـ فريق 1</button>
-    <button id="teamTwoVote" onclick="vote('teamTwo')">تصويت لـ فريق 2</button>
+        <button id="teamOneVote" onclick="vote('teamOne')">تصويت لفريق 1</button>
+        <button id="teamTwoVote" onclick="vote('teamTwo')">تصويت لفريق 2</button>
 
-    <p id="voteResult"></p>
+        <p id="voteResult"></p>
+    </div>
 
     <!-- JavaScript الخاص بالتصويت وعرض المعلومات -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
