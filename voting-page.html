@@ -124,28 +124,28 @@
                 console.error("Error getting document:", error);
             });
 
-        function vote() {
-            const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
+       function vote() {
+    const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
-            voteRef.get().then((doc) => {
-                if (doc.exists) {
-                    console.log("Vote already exists, team: ", doc.data().team);
-                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
-                } else {
-                    voteRef.set({ team: team }).then(() => {
-                        console.log("Vote recorded for team: ", team);
-                        document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
-                        disableVoteButton();
-                    }).catch((error) => {
-                        console.error("Error recording vote:", error);
-                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
-                    });
-                }
+    voteRef.get().then((doc) => {
+        if (doc.exists) {
+            console.log("Vote already exists, team: ", doc.data().team);
+            document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
+        } else {
+            voteRef.set({ team: team }).then(() => {
+                console.log("Vote recorded for team: ", team);
+                document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
+                disableVoteButton();
             }).catch((error) => {
-                console.error("Error checking vote existence:", error);
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
+                console.error("Error recording vote:", error);
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
             });
         }
+    }).catch((error) => {
+        console.error("Error checking vote existence:", error);
+        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
+    });
+}
 
         function resetVoteStatus() {
             document.getElementById('voteResult').innerText = '';
