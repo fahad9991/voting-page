@@ -40,23 +40,23 @@
     </style>
 </head>
 <body>
-    <h1>اختر فريقك ١٢٣للتصويت</h1>
+    <h1>اختر فريقك للتصويت</h1>
 
-    <button onclick="window.location.href='voting-page.html?team=teamOne&gameId=YOUR_GAME_ID'">التصويت لفريق 1</button>
-    <button onclick="window.location.href='voting-page.html?team=teamTwo&gameId=YOUR_GAME_ID'">التصويت لفريق 2</button>
+    <button id="teamOneButton">التصويت لفريق 1</button>
+    <button id="teamTwoButton">التصويت لفريق 2</button>
 
     <script>
-        // منع التكبير باللمس
-        document.addEventListener('touchmove', function(event) {
-            if (event.scale !== 1) {
-                event.preventDefault();
-            }
-        }, { passive: false });
+        // الحصول على gameId من عنوان URL الحالي
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('gameId');
 
-        // منع التكبير عبر النقر المزدوج
-        document.addEventListener('dblclick', function(event) {
-            event.preventDefault();
-        });
+        // تعيين روابط الأزرار بناءً على gameId
+        document.getElementById('teamOneButton').onclick = function() {
+            window.location.href = 'voting-page.html?team=teamOne&gameId=' + gameId;
+        };
+        document.getElementById('teamTwoButton').onclick = function() {
+            window.location.href = 'voting-page.html?team=teamTwo&gameId=' + gameId;
+        };
     </script>
 </body>
 </html>
