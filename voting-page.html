@@ -11,15 +11,7 @@
             color: #333;
             text-align: center;
             padding: 20px;
-            touch-action: manipulation; /* منع التكبير */
-            -ms-touch-action: manipulation;
-            -webkit-touch-action: manipulation;
-            overflow-x: hidden;
-            overflow-y: hidden;
-            user-select: none; /* منع نسخ النص أو تحديده */
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
+            touch-action: manipulation;
         }
 
         h1 {
@@ -46,7 +38,6 @@
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            user-select: none; /* منع نسخ النص داخل الزر أو تحديده */
         }
 
         button:hover {
@@ -71,25 +62,15 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        /* منع التكبير بواسطة التكبير الثنائي اللمس (pinch zoom) */
-        @media (max-width: 10000px) {
-            html {
-                touch-action: none;
-            }
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-              <h1>التصويت للسؤال الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
         <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         <p id="questionCategory">فئة السؤال: ...</p>
-
-        <p id="playerNameDisplay">اسمك: ...</p> <!-- إضافة عرض الاسم -->
 
         <button id="voteButton" onclick="vote()">تصويت</button>
 
@@ -102,11 +83,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
         const team = urlParams.get('team');
-        const playerName = urlParams.get('playerName');
+        const userName = urlParams.get('userName');
 
-        document.getElementById('playerNameDisplay').innerText = `اسمك: ${playerName}`;
-
-    const firebaseConfig = {
+        const firebaseConfig = {
             apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
             authDomain: "triviakw-dfe7f.firebaseapp.com",
             databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
@@ -150,7 +129,7 @@
                     console.log("Vote already exists, team: ", doc.data().team);
                     document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
                 } else {
-                    voteRef.set({ team: team, playerName: playerName }).then(() => {
+                    voteRef.set({ team: team, userName: userName }).then(() => {
                         console.log("Vote recorded for team: ", team);
                         document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
                         disableVoteButton();
@@ -174,7 +153,6 @@
             document.getElementById('voteButton').disabled = true;
         }
 
-        // منع تكبير الصفحة
         document.addEventListener('gesturestart', function (e) {
             e.preventDefault();
         });
