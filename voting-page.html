@@ -16,19 +16,21 @@
             -webkit-touch-action: manipulation;
             overflow-x: hidden;
             overflow-y: hidden;
+            user-select: none; /* منع نسخ النص أو تحديده */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         h1 {
             color: #2c3e50;
             font-size: 2.5em;
             margin-bottom: 20px;
-            user-select: none;
         }
 
         p {
             font-size: 1.2em;
             margin: 10px 0;
-            user-select: none;
         }
 
         button {
@@ -44,10 +46,7 @@
             width: 150px;
             height: 150px;
             border-radius: 50%;
-            user-select: none; /* منع تحديد النص */
-            -webkit-user-select: none; /* منع تحديد النص في سفاري */
-            -moz-user-select: none; /* منع تحديد النص في فايرفوكس */
-            -ms-user-select: none; /* منع تحديد النص في إنترنت إكسبلورر */
+            user-select: none; /* منع نسخ النص داخل الزر أو تحديده */
         }
 
         button:hover {
@@ -63,7 +62,6 @@
             margin-top: 20px;
             font-size: 1.3em;
             color: #e74c3c;
-            user-select: none;
         }
 
         .container {
@@ -180,6 +178,14 @@
                 e.preventDefault();
             }
         }, { passive: false });
+
+        // منع النسخ أو التحديد
+        document.addEventListener('selectstart', function (e) {
+            e.preventDefault();
+        });
+        document.addEventListener('copy', function (e) {
+            e.preventDefault();
+        });
     </script>
 </body>
 </html>
