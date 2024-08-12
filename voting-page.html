@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <title>التصويت</title>
     <style>
         body {
@@ -11,7 +11,7 @@
             color: #333;
             text-align: center;
             padding: 20px;
-            touch-action: manipulation; /* منع التكبير */
+            touch-action: manipulation; /* منع التكبير باللمس */
         }
 
         h1 {
@@ -62,6 +62,14 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* تعطيل التكبير عند النقر المزدوج أو اللمس */
+        html, body {
+            -webkit-user-select: none; /* منع تحديد النص */
+            -webkit-touch-callout: none; /* منع القائمة السياقية */
+            -webkit-tap-highlight-color: transparent; /* تعطيل تسليط الضوء عند النقر */
+            touch-action: manipulation; /* منع التكبير باللمس */
         }
     </style>
 </head>
@@ -152,7 +160,7 @@
             document.getElementById('voteButton').disabled = true;
         }
 
-        // منع تكبير الصفحة
+        // منع التكبير بالإيماءات (gestures) على iOS
         document.addEventListener('gesturestart', function (e) {
             e.preventDefault();
         });
