@@ -12,17 +12,23 @@
             text-align: center;
             padding: 20px;
             touch-action: manipulation; /* منع التكبير */
+            -ms-touch-action: manipulation;
+            -webkit-touch-action: manipulation;
+            overflow-x: hidden;
+            overflow-y: hidden;
         }
 
         h1 {
             color: #2c3e50;
             font-size: 2.5em;
             margin-bottom: 20px;
+            user-select: none;
         }
 
         p {
             font-size: 1.2em;
             margin: 10px 0;
+            user-select: none;
         }
 
         button {
@@ -57,6 +63,7 @@
             margin-top: 20px;
             font-size: 1.3em;
             color: #e74c3c;
+            user-select: none;
         }
 
         .container {
@@ -66,6 +73,14 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* منع التكبير بواسطة التكبير الثنائي اللمس (pinch zoom) */
+        @media (max-width: 10000px) {
+            html {
+                touch-action: none;
+            }
         }
     </style>
 </head>
@@ -110,7 +125,7 @@
                     const points = data.points || '...';
                     const category = data.category || '...';
 
-                    document.getElementById('questionPoints').innerText = `قيمة الس1ؤال: ${points} نقطة`;
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
                     document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
 
                     if (data.questionId !== currentQuestionId) {
@@ -156,10 +171,15 @@
             document.getElementById('voteButton').disabled = true;
         }
 
-        // منع تكبير الصفحة
+        // منع التكبير بواسطة جميع الأشكال
         document.addEventListener('gesturestart', function (e) {
             e.preventDefault();
         });
+        document.addEventListener('touchmove', function (e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
