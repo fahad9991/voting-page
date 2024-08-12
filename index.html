@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
     <title>اختيار الفريق للتصويت</title>
     <style>
         body {
@@ -11,6 +11,7 @@
             color: #333;
             text-align: center;
             padding: 20px;
+            touch-action: manipulation; /* تعطيل التكبير عند اللمس */
         }
 
         h1 {
@@ -34,12 +35,18 @@
         button:hover {
             background-color: #2980b9;
         }
+
+        /* تعطيل التكبير عند النقر المزدوج */
+        html, body {
+            -webkit-user-select: none; /* تعطيل تحديد النص */
+            -webkit-touch-callout: none; /* تعطيل القائمة السياقية */
+            -webkit-tap-highlight-color: transparent; /* تعطيل تسليط الضوء عند النقر */
+        }
     </style>
 </head>
 <body>
     <h1>اختر فريقك للتصويت</h1>
 
-    <!-- استخدام JavaScript لتعيين الروابط بناءً على gameId الموجود في عنوان URL -->
     <button id="teamOneButton">التصويت لفريق 1</button>
     <button id="teamTwoButton">التصويت لفريق 2</button>
 
