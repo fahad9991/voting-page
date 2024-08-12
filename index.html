@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التصويت</title>
+    <title>اختيار الفريق للتصويت</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -19,18 +19,13 @@
             margin-bottom: 20px;
         }
 
-        p {
-            font-size: 1.2em;
-            margin: 10px 0;
-        }
-
         button {
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 20px 40px;
-            font-size: 1.5em;
-            margin: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            margin: 10px;
             cursor: pointer;
             border-radius: 8px;
             transition: background-color 0.3s ease;
@@ -39,153 +34,12 @@
         button:hover {
             background-color: #2980b9;
         }
-
-        button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .vote-button {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            font-size: 2em;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background-color 0.3s ease;
-        }
-
-        .vote-button:hover {
-            background-color: #c0392b;
-        }
-
-        .disabled-button {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
     </style>
 </head>
 <body>
-    <div id="teamSelection" class="container">
-        <h1>اختر الفريق</h1>
-        <div id="teamButtons">
-            <button id="teamOneButton">الدخول لفريق 1</button>
-            <button id="teamTwoButton">الدخول لفريق 2</button>
-        </div>
-    </div>
+    <h1>اختر فريقك للتصويت</h1>
 
-    <div id="votingSection" class="container" style="display: none;">
-        <h1>التصويت للسؤال الحالي</h1>
-        <p id="questionPoints">قيمة السؤال: ... نقطة</p>
-        <p id="questionCategory">فئة السؤال: ...</p>
-
-        <button id="voteButton" class="vote-button">تصويت</button>
-
-        <p id="voteResult"></p>
-    </div>
-
-    <!-- تحميل مكتبات Firebase بشكل صحيح -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
-
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const gameId = urlParams.get('gameId');
-
-        const firebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY",
-            authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
-            projectId: "YOUR_FIREBASE_PROJECT_ID",
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let selectedTeam = null;
-
-        // جلب أسماء الفرق وتحديث الأزرار
-        db.collection("games").doc(gameId).get().then((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                const teamOneName = data.teamOneName || 'فريق 1';
-                const teamTwoName = data.teamTwoName || 'فريق 2';
-
-                // تحديث النصوص على الأزرار
-                document.getElementById('teamOneButton').innerText = `الدخول لـ ${teamOneName}`;
-                document.getElementById('teamTwoButton').innerText = `الدخول لـ ${teamTwoName}`;
-
-                document.getElementById('teamOneButton').onclick = () => {
-                    selectedTeam = 'teamOne';
-                    showVotingSection();
-                };
-
-                document.getElementById('teamTwoButton').onclick = () => {
-                    selectedTeam = 'teamTwo';
-                    showVotingSection();
-                };
-            } else {
-                console.error("No such document!");
-            }
-        }).catch((error) => {
-            console.error("Error getting document:", error);
-        });
-
-        function showVotingSection() {
-            document.getElementById('teamSelection').style.display = 'none';
-            document.getElementById('votingSection').style.display = 'block';
-
-            // Fetch and display current question details
-            db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const points = data.points || '...';
-                        const category = data.category || '...';
-
-                        document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
-                        document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
-                    } else {
-                        console.error("No such document!");
-                    }
-                }, (error) => {
-                    console.error("Error getting document:", error);
-                });
-        }
-
-        // Handle voting
-        function vote() {
-            const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
-
-            voteRef.get().then((doc) => {
-                if (doc.exists) {
-                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
-                } else {
-                    voteRef.set({ team: selectedTeam }).then(() => {
-                        document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
-                        document.getElementById('voteButton').classList.add('disabled-button');
-                        document.getElementById('voteButton').disabled = true;
-                    }).catch((error) => {
-                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
-                    });
-                }
-            }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
-            });
-        }
-
-        document.getElementById('voteButton').onclick = vote;
-    </script>
+    <button onclick="window.location.href='voting-page.html?team=teamOne&gameId=A8A0A639-1C60-4AED-8F27-2CBC63C693CD'">التصويت لفريق 1</button>
+    <button onclick="window.location.href='voting-page.html?team=teamTwo&gameId=A8A0A639-1C60-4AED-8F27-2CBC63C693CD'">التصويت لفريق 2</button>
 </body>
 </html>
