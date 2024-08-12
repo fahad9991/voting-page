@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>التصويت</title>
     <style>
         body {
@@ -11,9 +11,7 @@
             color: #333;
             text-align: center;
             padding: 20px;
-            touch-action: none; /* منع التكبير باللمس */
-            -ms-touch-action: none;
-            -webkit-touch-action: none;
+            touch-action: manipulation; /* منع التكبير */
         }
 
         h1 {
@@ -40,6 +38,10 @@
             width: 150px;
             height: 150px;
             border-radius: 50%;
+            user-select: none; /* منع تحديد النص */
+            -webkit-user-select: none; /* منع تحديد النص في سفاري */
+            -moz-user-select: none; /* منع تحديد النص في فايرفوكس */
+            -ms-user-select: none; /* منع تحديد النص في إنترنت إكسبلورر */
         }
 
         button:hover {
@@ -71,7 +73,7 @@
 <body>
     <div class="container">
         <h1>التصويت للسؤال الحالي</h1>
-        <p id="questionPoints">قيمة١٢٣ السؤال: ... نقطة</p>
+        <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         <p id="questionCategory">فئة السؤال: ...</p>
 
         <button id="voteButton" onclick="vote()">تصويت</button>
@@ -86,7 +88,6 @@
         const gameId = urlParams.get('gameId');
         const team = urlParams.get('team');
 
-     
         const firebaseConfig = {
             apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
             authDomain: "triviakw-dfe7f.firebaseapp.com",
@@ -96,7 +97,6 @@
             messagingSenderId: "274369788646",
             appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
-
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -124,28 +124,28 @@
                 console.error("Error getting document:", error);
             });
 
-       function vote() {
-    const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
+        function vote() {
+            const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
-    voteRef.get().then((doc) => {
-        if (doc.exists) {
-            console.log("Vote already exists, team: ", doc.data().team);
-            document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
-        } else {
-            voteRef.set({ team: team }).then(() => {
-                console.log("Vote recorded for team: ", team);
-                document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
-                disableVoteButton();
+            voteRef.get().then((doc) => {
+                if (doc.exists) {
+                    console.log("Vote already exists, team: ", doc.data().team);
+                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
+                } else {
+                    voteRef.set({ team: team }).then(() => {
+                        console.log("Vote recorded for team: ", team);
+                        document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
+                        disableVoteButton();
+                    }).catch((error) => {
+                        console.error("Error recording vote:", error);
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
+                    });
+                }
             }).catch((error) => {
-                console.error("Error recording vote:", error);
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
+                console.error("Error checking vote existence:", error);
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
             });
         }
-    }).catch((error) => {
-        console.error("Error checking vote existence:", error);
-        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
-    });
-}
 
         function resetVoteStatus() {
             document.getElementById('voteResult').innerText = '';
@@ -156,21 +156,9 @@
             document.getElementById('voteButton').disabled = true;
         }
 
-        // منع التكبير بالإيماءات (gestures) على iOS
+        // منع تكبير الصفحة
         document.addEventListener('gesturestart', function (e) {
             e.preventDefault();
-        });
-
-        // منع التكبير باللمس
-        document.addEventListener('touchmove', function(event) {
-            if (event.scale !== 1) {
-                event.preventDefault();
-            }
-        }, { passive: false });
-
-        // منع التكبير عبر النقر المزدوج
-        document.addEventListener('dblclick', function(event) {
-            event.preventDefault();
         });
     </script>
 </body>
