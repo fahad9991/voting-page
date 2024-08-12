@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>التصويت</title>
     <style>
         body {
@@ -11,7 +11,9 @@
             color: #333;
             text-align: center;
             padding: 20px;
-            touch-action: manipulation; /* منع التكبير باللمس */
+            touch-action: none; /* منع التكبير باللمس */
+            -ms-touch-action: none;
+            -webkit-touch-action: none;
         }
 
         h1 {
@@ -63,14 +65,6 @@
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
-
-        /* تعطيل التكبير عند النقر المزدوج أو اللمس */
-        html, body {
-            -webkit-user-select: none; /* منع تحديد النص */
-            -webkit-touch-callout: none; /* منع القائمة السياقية */
-            -webkit-tap-highlight-color: transparent; /* تعطيل تسليط الضوء عند النقر */
-            touch-action: manipulation; /* منع التكبير باللمس */
-        }
     </style>
 </head>
 
@@ -93,13 +87,13 @@
         const team = urlParams.get('team');
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
-            authDomain: "triviakw-dfe7f.firebaseapp.com",
-            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
-            projectId: "triviakw-dfe7f",
-            storageBucket: "triviakw-dfe7f.appspot.com",
-            messagingSenderId: "274369788646",
-            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            databaseURL: "YOUR_DATABASE_URL",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -163,6 +157,18 @@
         // منع التكبير بالإيماءات (gestures) على iOS
         document.addEventListener('gesturestart', function (e) {
             e.preventDefault();
+        });
+
+        // منع التكبير باللمس
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, { passive: false });
+
+        // منع التكبير عبر النقر المزدوج
+        document.addEventListener('dblclick', function(event) {
+            event.preventDefault();
         });
     </script>
 </body>
