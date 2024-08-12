@@ -4,22 +4,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التصويت</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2em;
+            color: #007BFF;
+            margin-bottom: 20px;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        button {
+            font-size: 1.2em;
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        #teamOneVote {
+            background-color: #28a745;
+            color: white;
+        }
+
+        #teamOneVote:hover {
+            background-color: #218838;
+        }
+
+        #teamTwoVote {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        #teamTwoVote:hover {
+            background-color: #c82333;
+        }
+
+        #voteResult {
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #555;
+        }
+    </style>
 </head>
 <body>
     <h1>التصويت للسؤال الحالي</h1>
     <p id="questionPoints">قيمة السؤال: ... نقطة</p>
     <p id="questionCategory">فئة السؤال: ...</p>
 
-    <button id="teamOneVote" onclick="vote('teamOne')">تصويت لفريق 11</button>
-    <button id="teamTwoVote" onclick="vote('teamTwo')">تصويت لفريق 2</button>
+    <button id="teamOneVote" onclick="vote('teamOne')">تصويت لـ فريق 1</button>
+    <button id="teamTwoVote" onclick="vote('teamTwo')">تصويت لـ فريق 2</button>
 
     <p id="voteResult"></p>
 
-    <!-- تضمين Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
-
+    <!-- JavaScript الخاص بالتصويت وعرض المعلومات -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
     <script>
+        // استخراج القيم من الرابط
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('gameId');
+
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
@@ -31,15 +93,10 @@
             appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
 
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
+        const app = firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // استخراج القيم من الرابط
-        const urlParams = new URLSearchParams(window.location.search);
-        const gameId = urlParams.get('gameId');
-
-        // إضافة استماع للبيانات في الوقت الفعلي
+        // جلب بيانات السؤال الحالي وتحديث الصفحة
         db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
             .onSnapshot((doc) => {
                 if (doc.exists) {
@@ -57,6 +114,23 @@
                 console.error("Error getting document:", error);
             });
 
+        // جلب أسماء الفرق وتحديث الأزرار
+        db.collection("games").doc(gameId).get().then((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const teamOneName = data.teamOneName || 'فريق 1';
+                const teamTwoName = data.teamTwoName || 'فريق 2';
+
+                // تحديث النصوص على الأزرار
+                document.getElementById('teamOneVote').innerText = `تصويت لـ ${teamOneName}`;
+                document.getElementById('teamTwoVote').innerText = `تصويت لـ ${teamTwoName}`;
+            } else {
+                console.log("No such document!");
+            }
+        }).catch((error) => {
+            console.error("Error getting document:", error);
+        });
+
         function vote(team) {
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
@@ -67,7 +141,7 @@
                 } else {
                     voteRef.set({ team: team }).then(() => {
                         console.log("Vote recorded for team: ", team);
-                        document.getElementById('voteResult').innerText = `تم التصويت لفريق ${team === 'teamOne' ? '1' : '2'} بنجاح!`;
+                        document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
                         document.getElementById('teamOneVote').disabled = true;
                         document.getElementById('teamTwoVote').disabled = true;
                     }).catch((error) => {
