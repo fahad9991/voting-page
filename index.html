@@ -15,9 +15,10 @@
 
     <p id="voteResult"></p>
 
-    <!-- JavaScript الخاص بالتصويت وعرض المعلومات -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <!-- تضمين Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
     <script>
         // Firebase configuration
         const firebaseConfig = {
@@ -31,34 +32,31 @@
         };
 
         // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         // استخراج القيم من الرابط
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
 
-        // دالة لجلب بيانات السؤال الحالي وتحديث الصفحة
-        function fetchCurrentQuestionData() {
-            db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const data = doc.data();
-                        const points = data.points || '...';
-                        const category = data.category || '...';
+        // إضافة استماع للبيانات في الوقت الفعلي
+        db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const points = data.points || '...';
+                    const category = data.category || '...';
 
-                        // تحديث المعلومات على الصفحة
-                        document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
-                        document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
-                    } else {
-                        console.log("No such document!");
-                    }
-                }, (error) => {
-                    console.error("Error getting document:", error);
-                });
-        }
+                    // تحديث المعلومات على الصفحة
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
+                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+                } else {
+                    console.log("No such document!");
+                }
+            }, (error) => {
+                console.error("Error getting document:", error);
+            });
 
-        // دالة للتصويت
         function vote(team) {
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
@@ -82,9 +80,6 @@
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
             });
         }
-
-        // استدعاء دالة جلب البيانات عند تحميل الصفحة
-        fetchCurrentQuestionData();
     </script>
 </body>
 </html>
