@@ -77,7 +77,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script>
-        // استخراج القيم من الرابط
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
 
@@ -95,6 +94,8 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        let currentQuestionId = null;
+
         // جلب بيانات السؤال الحالي وتحديث الصفحة
         db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
             .onSnapshot((doc) => {
@@ -106,6 +107,12 @@
                     // تحديث المعلومات على الصفحة
                     document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
                     document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+
+                    // إعادة تعيين حالة التصويت إذا تغير السؤال
+                    if (data.questionId !== currentQuestionId) {
+                        currentQuestionId = data.questionId;
+                        resetVoteStatus();
+                    }
                 } else {
                     console.log("No such document!");
                 }
@@ -141,8 +148,7 @@
                     voteRef.set({ team: team }).then(() => {
                         console.log("Vote recorded for team: ", team);
                         document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
-                        document.getElementById('teamOneVote').disabled = true;
-                        document.getElementById('teamTwoVote').disabled = true;
+                        disableVoteButtons();
                     }).catch((error) => {
                         console.error("Error recording vote:", error);
                         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
@@ -152,6 +158,17 @@
                 console.error("Error checking vote existence:", error);
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
             });
+        }
+
+        function resetVoteStatus() {
+            document.getElementById('voteResult').innerText = '';
+            document.getElementById('teamOneVote').disabled = false;
+            document.getElementById('teamTwoVote').disabled = false;
+        }
+
+        function disableVoteButtons() {
+            document.getElementById('teamOneVote').disabled = true;
+            document.getElementById('teamTwoVote').disabled = true;
         }
     </script>
 </body>
