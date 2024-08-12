@@ -28,9 +28,9 @@
             background-color: #3498db;
             color: white;
             border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            margin: 10px;
+            padding: 20px 40px;
+            font-size: 1.5em;
+            margin: 20px;
             cursor: pointer;
             border-radius: 8px;
             transition: background-color 0.3s ease;
@@ -38,6 +38,20 @@
 
         button:hover {
             background-color: #2980b9;
+        }
+
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
 
         .vote-button {
@@ -61,29 +75,18 @@
             background-color: #95a5a6;
             cursor: not-allowed;
         }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        #teamSelection, #votingSection {
-            display: none;
-        }
     </style>
 </head>
 <body>
     <div id="teamSelection" class="container">
         <h1>اختر الفريق</h1>
-        <button id="teamOneButton">الدخول لفريق 1</button>
-        <button id="teamTwoButton">الدخول لفريق 2</button>
+        <div id="teamButtons">
+            <button id="teamOneButton">الدخول لفريق 1</button>
+            <button id="teamTwoButton">الدخول لفريق 2</button>
+        </div>
     </div>
 
-    <div id="votingSection" class="container">
+    <div id="votingSection" class="container" style="display: none;">
         <h1>التصويت للسؤال الحالي</h1>
         <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         <p id="questionCategory">فئة السؤال: ...</p>
@@ -93,14 +96,13 @@
         <p id="voteResult"></p>
     </div>
 
+    <!-- تحميل مكتبات Firebase بشكل صحيح -->
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
-        let selectedTeam = null;
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "YOUR_FIREBASE_API_KEY",
             authDomain: "YOUR_FIREBASE_AUTH_DOMAIN",
@@ -110,40 +112,28 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function showTeamSelection() {
-            document.getElementById('teamSelection').style.display = 'block';
-            document.getElementById('votingSection').style.display = 'none';
-        }
+        let selectedTeam = null;
 
-        function showVotingSection() {
-            document.getElementById('teamSelection').style.display = 'none';
-            document.getElementById('votingSection').style.display = 'block';
-        }
-
-        // Get team names from Firestore
+        // جلب أسماء الفرق وتحديث الأزرار
         db.collection("games").doc(gameId).get().then((doc) => {
             if (doc.exists) {
                 const data = doc.data();
                 const teamOneName = data.teamOneName || 'فريق 1';
                 const teamTwoName = data.teamTwoName || 'فريق 2';
 
-                // Update button text with team names
+                // تحديث النصوص على الأزرار
                 document.getElementById('teamOneButton').innerText = `الدخول لـ ${teamOneName}`;
                 document.getElementById('teamTwoButton').innerText = `الدخول لـ ${teamTwoName}`;
 
-                // Set button links to the voting page for each team
                 document.getElementById('teamOneButton').onclick = () => {
                     selectedTeam = 'teamOne';
                     showVotingSection();
-                    updateVotingSection();
                 };
+
                 document.getElementById('teamTwoButton').onclick = () => {
                     selectedTeam = 'teamTwo';
                     showVotingSection();
-                    updateVotingSection();
                 };
-
-                showTeamSelection();
             } else {
                 console.error("No such document!");
             }
@@ -151,7 +141,10 @@
             console.error("Error getting document:", error);
         });
 
-        function updateVotingSection() {
+        function showVotingSection() {
+            document.getElementById('teamSelection').style.display = 'none';
+            document.getElementById('votingSection').style.display = 'block';
+
             // Fetch and display current question details
             db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
                 .onSnapshot((doc) => {
