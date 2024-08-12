@@ -39,7 +39,22 @@
 <body>
     <h1>اختر فريقك للتصويت</h1>
 
-    <button onclick="window.location.href='voting-page.html?team=teamOne&gameId=A8A0A639-1C60-4AED-8F27-2CBC63C693CD'">التصويت لفريق 1</button>
-    <button onclick="window.location.href='voting-page.html?team=teamTwo&gameId=A8A0A639-1C60-4AED-8F27-2CBC63C693CD'">التصويت لفريق 2</button>
+    <!-- استخدام JavaScript لتعيين الروابط بناءً على gameId الموجود في عنوان URL -->
+    <button id="teamOneButton">التصويت لفريق 1</button>
+    <button id="teamTwoButton">التصويت لفريق 2</button>
+
+    <script>
+        // الحصول على gameId من عنوان URL الحالي
+        const urlParams = new URLSearchParams(window.location.search);
+        const gameId = urlParams.get('gameId');
+
+        // تعيين روابط الأزرار بناءً على gameId
+        document.getElementById('teamOneButton').onclick = function() {
+            window.location.href = 'voting-page.html?team=teamOne&gameId=' + gameId;
+        };
+        document.getElementById('teamTwoButton').onclick = function() {
+            window.location.href = 'voting-page.html?team=teamTwo&gameId=' + gameId;
+        };
+    </script>
 </body>
 </html>
