@@ -33,17 +33,18 @@
         .scores {
             display: flex;
             justify-content: space-between;
-            padding: 10px 20px; /* Added padding for spacing */
+            align-items: center;
+            padding: 10px;
             background-color: #5f00aa;
             color: #ffffff;
-            box-sizing: border-box;
+            margin-bottom: 20px;
         }
 
         .score {
             font-size: 1.2em;
             margin: 0;
             text-align: center;
-            width: 40%; /* Adjusted to ensure space between scores */
+            flex: 1;
         }
 
         .score .team-name {
@@ -53,6 +54,10 @@
         .score .team-points {
             font-size: 1.5em;
             margin-top: 5px;
+        }
+
+        .spacer {
+            flex: 2; /* This will add space between the two teams */
         }
 
         p {
@@ -126,6 +131,7 @@
             <div class="team-name" id="currentTeamName">...</div>
             <div class="team-points" id="currentTeamPoints">...</div>
         </div>
+        <div class="spacer"></div>
         <div class="score" style="text-align: left;">
             <div class="team-name" id="otherTeamName">...</div>
             <div class="team-points" id="otherTeamPoints">...</div>
@@ -188,7 +194,6 @@
             }
         }
 
-        // تتبع التحديثات الحية للعبة
         db.collection("games").doc(gameId).onSnapshot((doc) => {
             if (doc.exists) {
                 updateScores(doc.data());
@@ -224,7 +229,6 @@
                     }
                     initialLoad = false;
 
-                    // Enable voting only if a new category has been loaded
                     document.getElementById('voteButton').disabled = category === '...';
                 } else {
                     console.log("No such document!");
