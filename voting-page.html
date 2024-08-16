@@ -22,14 +22,19 @@
             width: 100%; /* تمديد الهيدر ليغطي العرض الكامل */
             box-sizing: border-box; /* تأكد من أن padding لا يؤثر على عرض الهيدر */
             margin: 0; /* إزالة الهوامش */
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         h1 {
-            font-size: 1.5em;
+            font-size: 1.2em; /* تصغير النص */
             margin: 0;
+            color: #ffffff;
+        }
+
+        .scores {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #5f00aa;
             color: #ffffff;
         }
 
@@ -101,10 +106,13 @@
 
 <body>
     <header>
-        <p class="score" id="currentTeamScore">نتيجة الفريق الحالي: ...</p>
         <h1>التصويت للسؤال الحالي</h1>
-        <p class="score" id="otherTeamScore">نتيجة الفريق الآخر: ...</p>
     </header>
+
+    <div class="scores">
+        <p class="score" id="currentTeamScore">نتيجة الفريق الحالي: ...</p>
+        <p class="score" id="otherTeamScore">نتيجة الفريق الآخر: ...</p>
+    </div>
     
     <div class="container">
         <div class="info">
@@ -143,33 +151,33 @@
 
         document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
 
-        // جلب أسماء الفرق من Firestore باستخدام gameId
-        db.collection("games").doc(gameId).get().then((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                const teamOneName = data.teamOneName || 'الفريق الأول';
-                const teamTwoName = data.teamTwoName || 'الفريق الثاني';
-                const teamOneScore = data.teamOneScore || 0;
-                const teamTwoScore = data.teamTwoScore || 0;
+        function updateScores() {
+            // جلب أسماء الفرق ونتائجهم من Firestore باستخدام gameId
+            db.collection("games").doc(gameId).get().then((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const teamOneName = data.teamOneName || 'الفريق الأول';
+                    const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+                    const teamOneScore = data.teamOneScore || 0;
+                    const teamTwoScore = data.teamTwoScore || 0;
 
-                // تحديث واجهة المستخدم بناءً على الفريق الذي يصوت
-                const voteButton = document.getElementById('voteButton');
-                voteButton.textContent = `تصويت لـ ${team === 'teamOne' ? teamOneName : teamTwoName}`;
-
-                // عرض نتيجة الفرق
-                if (team === 'teamOne') {
-                    document.getElementById('currentTeamScore').innerText = `نتيجة ${teamOneName}: ${teamOneScore}`;
-                    document.getElementById('otherTeamScore').innerText = `نتيجة ${teamTwoName}: ${teamTwoScore}`;
+                    // عرض نتيجة الفرق
+                    if (team === 'teamOne') {
+                        document.getElementById('currentTeamScore').innerText = `نتيجة ${teamOneName}: ${teamOneScore}`;
+                        document.getElementById('otherTeamScore').innerText = `نتيجة ${teamTwoName}: ${teamTwoScore}`;
+                    } else {
+                        document.getElementById('currentTeamScore').innerText = `نتيجة ${teamTwoName}: ${teamTwoScore}`;
+                        document.getElementById('otherTeamScore').innerText = `نتيجة ${teamOneName}: ${teamOneScore}`;
+                    }
                 } else {
-                    document.getElementById('currentTeamScore').innerText = `نتيجة ${teamTwoName}: ${teamTwoScore}`;
-                    document.getElementById('otherTeamScore').innerText = `نتيجة ${teamOneName}: ${teamOneScore}`;
+                    console.log("Game document not found!");
                 }
-            } else {
-                console.log("Game document not found!");
-            }
-        }).catch((error) => {
-            console.error("Error getting game document:", error);
-        });
+            }).catch((error) => {
+                console.error("Error getting game document:", error);
+            });
+        }
+
+        updateScores();
 
         let currentCategory = null;
         let initialLoad = true;
@@ -187,7 +195,7 @@
                     if (category !== currentCategory) {
                         currentCategory = category;
                         if (!initialLoad) {
-                            location.reload();
+                            updateScores(); // تحديث النتائج بعد الخروج من كل سؤال
                         }
                     }
                     initialLoad = false;
