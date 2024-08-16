@@ -7,16 +7,21 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
+            background-color: #ffffff; /* لون خلفية الصفحة */
             color: #333;
             text-align: center;
             padding: 20px;
         }
 
+        header {
+            background-color: #5f00aa; /* لون خلفية الهيدر */
+            padding: 20px;
+            color: #ffffff; /* لون نص الهيدر */
+        }
+
         h1 {
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 20px;
+            font-size: 2em;
+            margin: 0;
         }
 
         input {
@@ -28,8 +33,8 @@
         }
 
         button {
-            background-color: #3498db;
-            color: white;
+            background-color: #ff365e; /* لون خلفية الأزرار */
+            color: white; /* لون نص الأزرار */
             border: none;
             padding: 15px 30px;
             font-size: 1.2em;
@@ -40,86 +45,89 @@
         }
 
         button:hover {
-            background-color: #2980b9;
+            background-color: #e62e52;
         }
     </style>
 </head>
 <body>
-<h1 style="font-size: 2em;">قم بالإنضمام الي فريقك</h1>
 
-    <input type="text" id="userName" placeholder="أدخل اسمك" required>
-    <button id="teamOneButton">الانضمام لفريق 1</button>
-    <button id="teamTwoButton">الانضمام لفريق 2</button>
+<header>
+    <h1>قم بالانضمام الى فريقك</h1>
+</header>
 
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const gameId = urlParams.get('gameId');
+<input type="text" id="userName" placeholder="أدخل اسمك" required>
+<button id="teamOneButton">الانضمام لفريق 1</button>
+<button id="teamTwoButton">الانضمام لفريق 2</button>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
-            authDomain: "triviakw-dfe7f.firebaseapp.com",
-            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
-            projectId: "triviakw-dfe7f",
-            storageBucket: "triviakw-dfe7f.appspot.com",
-            messagingSenderId: "274369788646",
-            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
-        };
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameId = urlParams.get('gameId');
 
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+    const firebaseConfig = {
+        apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
+        authDomain: "triviakw-dfe7f.firebaseapp.com",
+        databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
+        projectId: "triviakw-dfe7f",
+        storageBucket: "triviakw-dfe7f.appspot.com",
+        messagingSenderId: "274369788646",
+        appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
+    };
 
-        const teamOneButton = document.getElementById('teamOneButton');
-        const teamTwoButton = document.getElementById('teamTwoButton');
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-        // جلب أسماء الفرق من Firestore باستخدام gameId
-        db.collection("games").doc(gameId).get().then((doc) => {
-            if (doc.exists) {
-                const data = doc.data();
-                const teamOneName = data.teamOneName || 'الفريق الأول';
-                const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+    const teamOneButton = document.getElementById('teamOneButton');
+    const teamTwoButton = document.getElementById('teamTwoButton');
 
-                // تحديث أسماء الفرق على الأزرار
-                teamOneButton.textContent = `الانضمام لـ ${teamOneName}`;
-                teamTwoButton.textContent = `الانضمام لـ ${teamTwoName}`;
-            } else {
-                console.log("Game document not found!");
-            }
-        }).catch((error) => {
-            console.error("Error getting game document:", error);
-        });
+    // جلب أسماء الفرق من Firestore باستخدام gameId
+    db.collection("games").doc(gameId).get().then((doc) => {
+        if (doc.exists) {
+            const data = doc.data();
+            const teamOneName = data.teamOneName || 'الفريق الأول';
+            const teamTwoName = data.teamTwoName || 'الفريق الثاني';
 
-        const selectedTeamKey = `selectedTeam_${gameId}`;
-        const userNameKey = `userName_${gameId}`;
-        const storedUserName = localStorage.getItem(userNameKey);
-
-        if (storedUserName) {
-            document.getElementById('userName').value = storedUserName;
+            // تحديث أسماء الفرق على الأزرار
+            teamOneButton.textContent = `الانضمام لـ ${teamOneName}`;
+            teamTwoButton.textContent = `الانضمام لـ ${teamTwoName}`;
+        } else {
+            console.log("Game document not found!");
         }
+    }).catch((error) => {
+        console.error("Error getting game document:", error);
+    });
 
-        function saveSelectionAndNavigate(team) {
-            const userName = document.getElementById('userName').value.trim();
-            if (!userName) {
-                alert("يرجى إدخال اسمك.");
-                return;
-            }
-            if (localStorage.getItem(selectedTeamKey) && localStorage.getItem(selectedTeamKey) !== team) {
-                alert("لا يمكنك تغيير الفريق بعد اختيارك.");
-            } else {
-                localStorage.setItem(selectedTeamKey, team);
-                localStorage.setItem(userNameKey, userName);
-                window.location.href = `voting-page.html?team=${team}&gameId=${gameId}&userName=${encodeURIComponent(userName)}`;
-            }
+    const selectedTeamKey = `selectedTeam_${gameId}`;
+    const userNameKey = `userName_${gameId}`;
+    const storedUserName = localStorage.getItem(userNameKey);
+
+    if (storedUserName) {
+        document.getElementById('userName').value = storedUserName;
+    }
+
+    function saveSelectionAndNavigate(team) {
+        const userName = document.getElementById('userName').value.trim();
+        if (!userName) {
+            alert("يرجى إدخال اسمك.");
+            return;
         }
+        if (localStorage.getItem(selectedTeamKey) && localStorage.getItem(selectedTeamKey) !== team) {
+            alert("لا يمكنك تغيير الفريق بعد اختيارك.");
+        } else {
+            localStorage.setItem(selectedTeamKey, team);
+            localStorage.setItem(userNameKey, userName);
+            window.location.href = `voting-page.html?team=${team}&gameId=${gameId}&userName=${encodeURIComponent(userName)}`;
+        }
+    }
 
-        teamOneButton.onclick = function() {
-            saveSelectionAndNavigate('teamOne');
-        };
+    teamOneButton.onclick = function() {
+        saveSelectionAndNavigate('teamOne');
+    };
 
-        teamTwoButton.onclick = function() {
-            saveSelectionAndNavigate('teamTwo');
-        };
-    </script>
+    teamTwoButton.onclick = function() {
+        saveSelectionAndNavigate('teamTwo');
+    };
+</script>
 </body>
 </html>
