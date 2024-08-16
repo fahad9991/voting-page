@@ -116,7 +116,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال٢٢ الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -215,7 +215,11 @@
                         currentCategory = category;
                         if (!initialLoad) {
                             // تحديث النتائج بعد الخروج من كل سؤال
-                            updateScores(doc.data());
+                            db.collection("games").doc(gameId).get().then((doc) => {
+                                if (doc.exists) {
+                                    updateScores(doc.data());
+                                }
+                            });
                         }
                     }
                     initialLoad = false;
