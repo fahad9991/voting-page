@@ -42,6 +42,7 @@
 
         button:hover {
             background-color: #2980b9;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
 
         button:disabled {
@@ -80,11 +81,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script>
+        // الحصول على معلمات URL
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
         const team = urlParams.get('team');
         const userName = urlParams.get('userName');
 
+        // إعدادات Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
             authDomain: "triviakw-dfe7f.firebaseapp.com",
@@ -95,11 +98,13 @@
             appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
 
+        // تهيئة Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let currentQuestionId = null;
 
+        // الاشتراك في تغييرات السؤال الحالي
         db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
             .onSnapshot((doc) => {
                 if (doc.exists) {
@@ -122,31 +127,42 @@
             });
 
         function vote() {
+            // التحقق من صحة البيانات قبل التصويت
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات التصويت غير مكتملة.';
+                return;
+            }
+
+            const voteButton = document.getElementById('voteButton');
+            voteButton.disabled = true;
+
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
             voteRef.get().then((doc) => {
                 if (doc.exists) {
                     console.log("Vote already exists, team: ", doc.data().team);
-                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل الفريق الآخر.`;
+                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل ${doc.data().team}.`;
                 } else {
                     voteRef.set({ team: team, userName: userName }).then(() => {
                         console.log("Vote recorded for team: ", team);
-                        document.getElementById('voteResult').innerText = `تم التصويت بنجاح!`;
+                        document.getElementById('voteResult').innerText = 'تم التصويت بنجاح!';
                         disableVoteButton();
 
-                        // تحديث الصفحة بعد التصويت بنجاح
+                        // تأكيد نجاح التصويت للمستخدم
                         setTimeout(() => {
                             location.reload();
-                        }, 1000);
+                        }, 2000);
 
                     }).catch((error) => {
                         console.error("Error recording vote:", error);
-                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. حاول مرة أخرى.';
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
+                        voteButton.disabled = false;
                     });
                 }
             }).catch((error) => {
                 console.error("Error checking vote existence:", error);
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. حاول مرة أخرى.';
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
+                voteButton.disabled = false;
             });
         }
 
@@ -164,8 +180,9 @@
             location.reload();
         };
 
+        // منع التفاعل مع الصفحة أثناء السحب أو اللمس
         document.addEventListener('gesturestart', function (e) {
-            e.preventDefault();
+            e.preventكDefault();
         });
     </script>
 </body>
