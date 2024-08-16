@@ -99,7 +99,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let currentQuestionId = null;
+        let currentCategory = null;
         let initialLoad = true;
 
         db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
@@ -109,14 +109,14 @@
                     const points = data.points || '...';
                     const category = data.category || '...';
 
-                    document.getElementById('questionPoints').innerText = `قيميشزذة السؤال: ${points} نقطة`;
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
                     document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
 
-                    // تحقق من التغيير في questionId
-                    if (data.questionId !== currentQuestionId) {
-                        currentQuestionId = data.questionId;
+                    // تحقق من التغيير في category
+                    if (category !== currentCategory) {
+                        currentCategory = category;
                         if (!initialLoad) {
-                            // إعادة تحميل الصفحة عند تغيير السؤال
+                            // إعادة تحميل الصفحة عند تغيير فئة السؤال
                             location.reload();
                         }
                     }
