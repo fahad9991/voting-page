@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #ffffff; /* لون خلفية الصفحة */
+            background-color: #ffffff;
             color: #333;
             text-align: center;
             padding: 20px;
@@ -16,16 +16,16 @@
         }
 
         header {
-            background-color: #5f00aa; /* لون خلفية الهيدر */
-            padding: 10px; /* تقليل ارتفاع الهيدر */
-            color: #ffffff; /* لون نص الهيدر */
-            width: 100%; /* تمديد الهيدر ليغطي العرض الكامل */
-            box-sizing: border-box; /* تأكد من أن padding لا يؤثر على عرض الهيدر */
-            margin: 0; /* إزالة الهوامش */
+            background-color: #5f00aa;
+            padding: 10px;
+            color: #ffffff;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 0;
         }
 
         h1 {
-            font-size: 1.2em; /* تصغير النص */
+            font-size: 1.2em;
             margin: 0;
             color: #ffffff;
         }
@@ -42,6 +42,7 @@
             font-size: 1.2em;
             margin: 0;
             text-align: center;
+            width: 50%; /* Ensure the scores are equally spaced */
         }
 
         .score .team-name {
@@ -60,14 +61,14 @@
         }
 
         button {
-            background-color: #ff365e; /* لون خلفية الأزرار */
-            color: white; /* لون نص الأزرار */
+            background-color: #ff365e;
+            color: white;
             border: none;
             padding: 15px 30px;
             font-size: 1.2em;
             margin: 10px;
             cursor: pointer;
-            border-radius: 50%; /* جعل الأزرار دائرية */
+            border-radius: 50%;
             transition: background-color 0.3s ease;
             width: 150px;
             height: 150px;
@@ -120,11 +121,11 @@
     </header>
 
     <div class="scores">
-        <div class="score">
+        <div class="score" style="text-align: right;">
             <div class="team-name" id="currentTeamName">...</div>
             <div class="team-points" id="currentTeamPoints">...</div>
         </div>
-        <div class="score">
+        <div class="score" style="text-align: left;">
             <div class="team-name" id="otherTeamName">...</div>
             <div class="team-points" id="otherTeamPoints">...</div>
         </div>
@@ -139,7 +140,7 @@
             <p id="questionCategory">فئة السؤال: ...</p>
         </div>
 
-        <button id="voteButton" onclick="vote()">تصويت</button>
+        <button id="voteButton" onclick="vote()" disabled>تصويت</button>
 
         <p id="voteResult"></p>
     </div>
@@ -165,7 +166,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
+        document.getElementById('userNameDisplay').innerText = `التصو١٢٣يت بواسطة: ${userName}`;
 
         function updateScores(data) {
             const teamOneName = data.teamOneName || 'الفريق الأول';
@@ -173,7 +174,6 @@
             const teamOneScore = data.teamOneScore || 0;
             const teamTwoScore = data.teamTwoScore || 0;
 
-            // عرض اسماء الفرق ونتائجهم
             if (team === 'teamOne') {
                 document.getElementById('currentTeamName').innerText = teamOneName;
                 document.getElementById('currentTeamPoints').innerText = teamOneScore;
@@ -214,7 +214,6 @@
                     if (category !== currentCategory) {
                         currentCategory = category;
                         if (!initialLoad) {
-                            // تحديث النتائج بعد الخروج من كل سؤال
                             db.collection("games").doc(gameId).get().then((doc) => {
                                 if (doc.exists) {
                                     updateScores(doc.data());
@@ -223,6 +222,9 @@
                         }
                     }
                     initialLoad = false;
+
+                    // Enable voting only if a new category has been loaded
+                    document.getElementById('voteButton').disabled = category === '...';
                 } else {
                     console.log("No such document!");
                 }
