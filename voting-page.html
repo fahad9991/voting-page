@@ -33,16 +33,17 @@
         .scores {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
+            padding: 10px 20px; /* Added padding for spacing */
             background-color: #5f00aa;
             color: #ffffff;
+            box-sizing: border-box;
         }
 
         .score {
             font-size: 1.2em;
             margin: 0;
             text-align: center;
-            width: 50%; /* Ensure the scores are equally spaced */
+            width: 40%; /* Adjusted to ensure space between scores */
         }
 
         .score .team-name {
@@ -166,7 +167,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        document.getElementById('userNameDisplay').innerText = `التصو١٢٣يت بواسطة: ${userName}`;
+        document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
 
         function updateScores(data) {
             const teamOneName = data.teamOneName || 'الفريق الأول';
