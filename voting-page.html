@@ -17,17 +17,25 @@
 
         header {
             background-color: #5f00aa; /* لون خلفية الهيدر */
-            padding: 20px;
+            padding: 10px; /* تقليل ارتفاع الهيدر */
             color: #ffffff; /* لون نص الهيدر */
             width: 100%; /* تمديد الهيدر ليغطي العرض الكامل */
             box-sizing: border-box; /* تأكد من أن padding لا يؤثر على عرض الهيدر */
             margin: 0; /* إزالة الهوامش */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         h1 {
-            font-size: 2em;
-            margin: 0 0 20px 0;
+            font-size: 1.5em;
+            margin: 0;
             color: #ffffff;
+        }
+
+        .score {
+            font-size: 1.2em;
+            margin: 0;
         }
 
         p {
@@ -74,17 +82,38 @@
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
+
+        .info {
+            margin-bottom: 20px;
+        }
+
+        .info p {
+            margin: 5px 0;
+        }
+
+        .question-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 
 <body>
     <header>
+        <p class="score" id="currentTeamScore">نتيجة الفريق الحالي: ...</p>
         <h1>التصويت للسؤال الحالي</h1>
+        <p class="score" id="otherTeamScore">نتيجة الفريق الآخر: ...</p>
     </header>
     
     <div class="container">
-        <p id="questionPoints">قيمة السؤال: ... نقطة</p>
-        <p id="questionCategory">فئة السؤال: ...</p>
+        <div class="info">
+            <p id="userNameDisplay">التصويت بواسطة: ...</p>
+        </div>
+        <div class="question-info">
+            <p id="questionPoints">قيمة السؤال: ... نقطة</p>
+            <p id="questionCategory">فئة السؤال: ...</p>
+        </div>
 
         <button id="voteButton" onclick="vote()">تصويت</button>
 
@@ -112,16 +141,29 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
+
         // جلب أسماء الفرق من Firestore باستخدام gameId
         db.collection("games").doc(gameId).get().then((doc) => {
             if (doc.exists) {
                 const data = doc.data();
                 const teamOneName = data.teamOneName || 'الفريق الأول';
                 const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+                const teamOneScore = data.teamOneScore || 0;
+                const teamTwoScore = data.teamTwoScore || 0;
 
                 // تحديث واجهة المستخدم بناءً على الفريق الذي يصوت
                 const voteButton = document.getElementById('voteButton');
                 voteButton.textContent = `تصويت لـ ${team === 'teamOne' ? teamOneName : teamTwoName}`;
+
+                // عرض نتيجة الفرق
+                if (team === 'teamOne') {
+                    document.getElementById('currentTeamScore').innerText = `نتيجة ${teamOneName}: ${teamOneScore}`;
+                    document.getElementById('otherTeamScore').innerText = `نتيجة ${teamTwoName}: ${teamTwoScore}`;
+                } else {
+                    document.getElementById('currentTeamScore').innerText = `نتيجة ${teamTwoName}: ${teamTwoScore}`;
+                    document.getElementById('otherTeamScore').innerText = `نتيجة ${teamOneName}: ${teamOneScore}`;
+                }
             } else {
                 console.log("Game document not found!");
             }
