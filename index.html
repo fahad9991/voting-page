@@ -10,13 +10,17 @@
             background-color: #ffffff; /* لون خلفية الصفحة */
             color: #333;
             text-align: center;
-            padding: 20px;
+            margin: 0; /* إزالة الهوامش */
+            padding: 0; /* إزالة التباعد */
         }
 
         header {
             background-color: #5f00aa; /* لون خلفية الهيدر */
             padding: 20px;
             color: #ffffff; /* لون نص الهيدر */
+            width: 100%; /* تمديد الهيدر ليغطي العرض الكامل */
+            box-sizing: border-box; /* تأكد من أن padding لا يؤثر على عرض الهيدر */
+            margin: 0; /* إزالة الهوامش */
         }
 
         h1 {
@@ -52,7 +56,7 @@
 <body>
 
 <header>
-    <h1>قم بالانضمام الى فريقك</h1>
+<h1 style="font-size: 2em;">قم بالإنضمام الي فريقك</h1>
 </header>
 
 <input type="text" id="userName" placeholder="أدخل اسمك" required>
