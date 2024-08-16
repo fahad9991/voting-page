@@ -51,14 +51,46 @@
     <button id="teamOneButton">التصويت لفريق 1</button>
     <button id="teamTwoButton">التصويت لفريق 2</button>
 
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
     <script>
-        // الحصول على gameId من عنوان URL الحالي
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
 
-        // التحقق مما إذا كان الفريق قد تم اختياره مسبقًا لهذه اللعبة
+        const firebaseConfig = {
+            apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
+            authDomain: "triviakw-dfe7f.firebaseapp.com",
+            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
+            projectId: "triviakw-dfe7f",
+            storageBucket: "triviakw-dfe7f.appspot.com",
+            messagingSenderId: "274369788646",
+            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        const teamOneButton = document.getElementById('teamOneButton');
+        const teamTwoButton = document.getElementById('teamTwoButton');
+
+        // جلب أسماء الفرق من Firestore باستخدام gameId
+        db.collection("games").doc(gameId).get().then((doc) => {
+            if (doc.exists) {
+                const data = doc.data();
+                const teamOneName = data.teamOneName || 'الفريق الأول';
+                const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+
+                // تحديث أسماء الفرق على الأزرار
+                teamOneButton.textContent = `التصويت لـ ${teamOneName}`;
+                teamTwoButton.textContent = `التصويت لـ ${teamTwoName}`;
+            } else {
+                console.log("Game document not found!");
+            }
+        }).catch((error) => {
+            console.error("Error getting game document:", error);
+        });
+
         const selectedTeamKey = `selectedTeam_${gameId}`;
-        const selectedTeam = localStorage.getItem(selectedTeamKey);
         const userNameKey = `userName_${gameId}`;
         const storedUserName = localStorage.getItem(userNameKey);
 
@@ -72,7 +104,7 @@
                 alert("يرجى إدخال اسمك.");
                 return;
             }
-            if (selectedTeam && selectedTeam !== team) {
+            if (localStorage.getItem(selectedTeamKey) && localStorage.getItem(selectedTeamKey) !== team) {
                 alert("لا يمكنك تغيير الفريق بعد اختيارك.");
             } else {
                 localStorage.setItem(selectedTeamKey, team);
@@ -81,11 +113,11 @@
             }
         }
 
-        document.getElementById('teamOneButton').onclick = function() {
+        teamOneButton.onclick = function() {
             saveSelectionAndNavigate('teamOne');
         };
 
-        document.getElementById('teamTwoButton').onclick = function() {
+        teamTwoButton.onclick = function() {
             saveSelectionAndNavigate('teamTwo');
         };
     </script>
