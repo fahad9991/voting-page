@@ -49,15 +49,17 @@
 
         .score .team-name {
             font-weight: bold;
+            text-align: center;
         }
 
         .score .team-points {
             font-size: 1.5em;
             margin-top: 5px;
+            text-align: center;
         }
 
         .spacer {
-            flex: 2; /* This will add space between the two teams */
+            flex: 2;
         }
 
         p {
@@ -127,12 +129,12 @@
     </header>
 
     <div class="scores">
-        <div class="score" style="text-align: right;">
+        <div class="score" style="text-align: left;">
             <div class="team-name" id="currentTeamName">...</div>
             <div class="team-points" id="currentTeamPoints">...</div>
         </div>
         <div class="spacer"></div>
-        <div class="score" style="text-align: left;">
+        <div class="score" style="text-align: right;">
             <div class="team-name" id="otherTeamName">...</div>
             <div class="team-points" id="otherTeamPoints">...</div>
         </div>
@@ -182,15 +184,15 @@
             const teamTwoScore = data.teamTwoScore || 0;
 
             if (team === 'teamOne') {
-                document.getElementById('currentTeamName').innerText = teamOneName;
-                document.getElementById('currentTeamPoints').innerText = teamOneScore;
-                document.getElementById('otherTeamName').innerText = teamTwoName;
-                document.getElementById('otherTeamPoints').innerText = teamTwoScore;
-            } else {
                 document.getElementById('currentTeamName').innerText = teamTwoName;
                 document.getElementById('currentTeamPoints').innerText = teamTwoScore;
                 document.getElementById('otherTeamName').innerText = teamOneName;
                 document.getElementById('otherTeamPoints').innerText = teamOneScore;
+            } else {
+                document.getElementById('currentTeamName').innerText = teamOneName;
+                document.getElementById('currentTeamPoints').innerText = teamOneScore;
+                document.getElementById('otherTeamName').innerText = teamTwoName;
+                document.getElementById('otherTeamPoints').innerText = teamTwoScore;
             }
         }
 
