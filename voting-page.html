@@ -7,41 +7,51 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
+            background-color: #ffffff; /* لون خلفية الصفحة */
             color: #333;
             text-align: center;
             padding: 20px;
             touch-action: manipulation;
+            margin: 0;
+        }
+
+        header {
+            background-color: #5f00aa; /* لون خلفية الهيدر */
+            padding: 20px;
+            color: #ffffff; /* لون نص الهيدر */
+            width: 100%; /* تمديد الهيدر ليغطي العرض الكامل */
+            box-sizing: border-box; /* تأكد من أن padding لا يؤثر على عرض الهيدر */
+            margin: 0; /* إزالة الهوامش */
         }
 
         h1 {
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 20px;
+            font-size: 2em;
+            margin: 0 0 20px 0;
+            color: #ffffff;
         }
 
         p {
             font-size: 1.2em;
             margin: 10px 0;
+            color: #333;
         }
 
         button {
-            background-color: #3498db;
-            color: white;
+            background-color: #ff365e; /* لون خلفية الأزرار */
+            color: white; /* لون نص الأزرار */
             border: none;
             padding: 15px 30px;
             font-size: 1.2em;
             margin: 10px;
             cursor: pointer;
-            border-radius: 8px;
+            border-radius: 50%; /* جعل الأزرار دائرية */
             transition: background-color 0.3s ease;
             width: 150px;
             height: 150px;
-            border-radius: 50%;
         }
 
         button:hover {
-            background-color: #2980b9;
+            background-color: #e62e52;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
 
@@ -68,8 +78,11 @@
 </head>
 
 <body>
-    <div class="container">
+    <header>
         <h1>التصويت للسؤال الحالي</h1>
+    </header>
+    
+    <div class="container">
         <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         <p id="questionCategory">فئة السؤال: ...</p>
 
