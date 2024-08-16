@@ -117,8 +117,12 @@
 
         .question-info {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
+        }
+
+        .question-info p {
+            margin: 5px 0;
         }
     </style>
 </head>
@@ -145,8 +149,8 @@
             <p id="userNameDisplay">التصويت بواسطة: ...</p>
         </div>
         <div class="question-info">
-            <p id="questionPoints">قيمة السؤال: ... نقطة</p>
             <p id="questionCategory">فئة السؤال: ...</p>
+            <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         </div>
 
         <button id="voteButton" onclick="vote()" disabled>تصويت</button>
