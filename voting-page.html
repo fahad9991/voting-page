@@ -116,7 +116,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال الحالي</h1>
+        <h1>التصويت للسؤال٢٢ الحالي</h1>
     </header>
 
     <div class="scores">
@@ -167,37 +167,36 @@
 
         document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
 
-        function updateScores() {
-            // جلب أسماء الفرق ونتائجهم من Firestore باستخدام gameId
-            db.collection("games").doc(gameId).get().then((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    const teamOneName = data.teamOneName || 'الفريق الأول';
-                    const teamTwoName = data.teamTwoName || 'الفريق الثاني';
-                    const teamOneScore = data.teamOneScore || 0;
-                    const teamTwoScore = data.teamTwoScore || 0;
+        function updateScores(data) {
+            const teamOneName = data.teamOneName || 'الفريق الأول';
+            const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+            const teamOneScore = data.teamOneScore || 0;
+            const teamTwoScore = data.teamTwoScore || 0;
 
-                    // عرض اسماء الفرق ونتائجهم
-                    if (team === 'teamOne') {
-                        document.getElementById('currentTeamName').innerText = teamOneName;
-                        document.getElementById('currentTeamPoints').innerText = teamOneScore;
-                        document.getElementById('otherTeamName').innerText = teamTwoName;
-                        document.getElementById('otherTeamPoints').innerText = teamTwoScore;
-                    } else {
-                        document.getElementById('currentTeamName').innerText = teamTwoName;
-                        document.getElementById('currentTeamPoints').innerText = teamTwoScore;
-                        document.getElementById('otherTeamName').innerText = teamOneName;
-                        document.getElementById('otherTeamPoints').innerText = teamOneScore;
-                    }
-                } else {
-                    console.log("Game document not found!");
-                }
-            }).catch((error) => {
-                console.error("Error getting game document:", error);
-            });
+            // عرض اسماء الفرق ونتائجهم
+            if (team === 'teamOne') {
+                document.getElementById('currentTeamName').innerText = teamOneName;
+                document.getElementById('currentTeamPoints').innerText = teamOneScore;
+                document.getElementById('otherTeamName').innerText = teamTwoName;
+                document.getElementById('otherTeamPoints').innerText = teamTwoScore;
+            } else {
+                document.getElementById('currentTeamName').innerText = teamTwoName;
+                document.getElementById('currentTeamPoints').innerText = teamTwoScore;
+                document.getElementById('otherTeamName').innerText = teamOneName;
+                document.getElementById('otherTeamPoints').innerText = teamOneScore;
+            }
         }
 
-        updateScores();
+        // تتبع التحديثات الحية للعبة
+        db.collection("games").doc(gameId).onSnapshot((doc) => {
+            if (doc.exists) {
+                updateScores(doc.data());
+            } else {
+                console.log("Game document not found!");
+            }
+        }, (error) => {
+            console.error("Error getting game document:", error);
+        });
 
         let currentCategory = null;
         let initialLoad = true;
@@ -215,7 +214,8 @@
                     if (category !== currentCategory) {
                         currentCategory = category;
                         if (!initialLoad) {
-                            updateScores(); // تحديث النتائج بعد الخروج من كل سؤال
+                            // تحديث النتائج بعد الخروج من كل سؤال
+                            updateScores(doc.data());
                         }
                     }
                     initialLoad = false;
@@ -246,7 +246,6 @@
                         disableVoteButton();
 
                         setTimeout(() => {
-                            updateScores(); // تحديث النتائج بعد التصويت
                             location.reload();
                         }, 2000);
 
