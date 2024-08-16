@@ -30,65 +30,42 @@
             color: #ffffff;
         }
 
-        .alert {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #ff365e;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            min-width: 300px;
-        }
-
-        .alert button {
-            background-color: #ffffff;
-            color: #ff365e;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1em;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-top: 10px;
-        }
-
-        .alert + .alert {
-            top: auto;
-            bottom: 20px;
-        }
-
         .scores {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             padding: 10px;
             background-color: #5f00aa;
             color: #ffffff;
+            margin-bottom: 20px;
         }
 
         .score {
             font-size: 1.2em;
             margin: 0;
             text-align: center;
-            width: 45%;
+            flex: 1;
         }
 
         .score .team-name {
             font-weight: bold;
+            text-align: center;
         }
 
         .score .team-points {
             font-size: 1.5em;
             margin-top: 5px;
+            text-align: center;
         }
 
-        .question-info p {
+        .spacer {
+            flex: 2;
+        }
+
+        p {
             font-size: 1.2em;
             margin: 10px 0;
             color: #333;
-            text-align: center;
         }
 
         button {
@@ -115,6 +92,12 @@
             cursor: not-allowed;
         }
 
+        #voteResult {
+            margin-top: 20px;
+            font-size: 1.3em;
+            color: #e74c3c;
+        }
+
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -122,6 +105,47 @@
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .info {
+            margin-bottom: 20px;
+        }
+
+        .info p {
+            margin: 5px 0;
+        }
+
+        .question-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .question-info p {
+            margin: 5px 0;
+        }
+
+        .alert {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #ff0000;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+        }
+
+        .alert button {
+            background-color: #ffffff;
+            color: #ff0000;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 3px;
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -132,25 +156,34 @@
     </header>
 
     <div class="scores">
-        <div class="score" id="teamTwoScore">
-            <div class="team-name">الفريق الثاني</div>
-            <div class="team-points">0</div>
+        <div class="score" style="text-align: left;">
+            <div class="team-name" id="currentTeamName">...</div>
+            <div class="team-points" id="currentTeamPoints">...</div>
         </div>
-        <div class="score" id="teamOneScore">
-            <div class="team-name">الفريق الأول</div>
-            <div class="team-points">0</div>
+        <div class="spacer"></div>
+        <div class="score" style="text-align: right;">
+            <div class="team-name" id="otherTeamName">...</div>
+            <div class="team-points" id="otherTeamPoints">...</div>
         </div>
     </div>
-
+    
     <div class="container">
+        <div class="info">
+            <p id="userNameDisplay">التصويت بواسطة: ...</p>
+        </div>
         <div class="question-info">
-            <p id="questionPoints">قيمة السؤال: ... نقطة</p>
             <p id="questionCategory">فئة السؤال: ...</p>
+            <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         </div>
 
-        <button id="voteButton" onclick="vote()">تصويت</button>
+        <button id="voteButton" onclick="vote()" disabled>تصويت</button>
 
         <p id="voteResult"></p>
+    </div>
+
+    <div id="alertBox" class="alert" style="display: none;">
+        <span id="alertText"></span>
+        <button id="closeAlertButton" onclick="closeAlert()">إغلاق</button>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
@@ -174,32 +207,101 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        function showAlert(userName) {
-            const alertDiv = document.createElement('div');
-            alertDiv.classList.add('alert');
-            alertDiv.innerHTML = `
-                <p>${userName} قام بمغادرة الصفحة أو تغييرها!</p>
-                <button onclick="closeAlert(this)">${userName}</button>
-            `;
-            document.body.appendChild(alertDiv);
+        document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
+
+        function updateScores(data) {
+            const teamOneName = data.teamOneName || 'الفريق الأول';
+            const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+            const teamOneScore = data.teamOneScore || 0;
+            const teamTwoScore = data.teamTwoScore || 0;
+
+            if (team === 'teamOne') {
+                document.getElementById('currentTeamName').innerText = teamTwoName;
+                document.getElementById('currentTeamPoints').innerText = teamTwoScore;
+                document.getElementById('otherTeamName').innerText = teamOneName;
+                document.getElementById('otherTeamPoints').innerText = teamOneScore;
+            } else {
+                document.getElementById('currentTeamName').innerText = teamOneName;
+                document.getElementById('currentTeamPoints').innerText = teamOneScore;
+                document.getElementById('otherTeamName').innerText = teamTwoName;
+                document.getElementById('otherTeamPoints').innerText = teamTwoScore;
+            }
         }
 
-        function closeAlert(button) {
-            const alertDiv = button.parentElement;
-            document.body.removeChild(alertDiv);
-        }
+        db.collection("games").doc(gameId).onSnapshot((doc) => {
+            if (doc.exists) {
+                updateScores(doc.data());
+            } else {
+                console.log("Game document not found!");
+            }
+        }, (error) => {
+            console.error("Error getting game document:", error);
+        });
 
-        function trackPageVisibility() {
-            document.addEventListener('visibilitychange', function() {
-                if (document.hidden) {
-                    showAlert(userName);
-                    disableVoteButton();
+        let currentCategory = null;
+        let initialLoad = true;
+
+        db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const points = data.points || '...';
+                    const category = data.category || '...';
+
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
+                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+
+                    if (category !== currentCategory) {
+                        currentCategory = category;
+                        if (!initialLoad) {
+                            db.collection("games").doc(gameId).get().then((doc) => {
+                                if (doc.exists) {
+                                    updateScores(doc.data());
+                                }
+                            });
+                        }
+                    }
+                    initialLoad = false;
+
+                    document.getElementById('voteButton').disabled = category === '...';
+                } else {
+                    console.log("No such document!");
                 }
+            }, (error) => {
+                console.error("Error getting document:", error);
             });
 
-            window.addEventListener('blur', function() {
-                showAlert(userName);
-                disableVoteButton();
+        function vote() {
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات التصويت غير مكتملة.';
+                return;
+            }
+
+            const voteButton = document.getElementById('voteButton');
+            voteButton.disabled = true;
+
+            const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
+
+            voteRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل ${doc.data().team}.`;
+                } else {
+                    voteRef.set({ team: team, userName: userName }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم التصويت بنجاح!';
+                        disableVoteButton();
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
+                        voteButton.disabled = false;
+                    });
+                }
+            }).catch((error) => {
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
+                voteButton.disabled = false;
             });
         }
 
@@ -211,9 +313,40 @@
             location.reload();
         };
 
-        document.addEventListener('DOMContentLoaded', function() {
-            trackPageVisibility();
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                showAlert(`${userName} غادر أو غير الصفحة`);
+            }
         });
+
+        function showAlert(message) {
+            const alertBox = document.getElementById('alertBox');
+            const alertText = document.getElementById('alertText');
+
+            alertText.innerText = message;
+            alertBox.style.display = 'block';
+        }
+
+        function closeAlert() {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.style.display = 'none';
+        }
+
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('wheel', function (e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', function (e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
