@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال الحالي</h1>
+        <h1>التصويت للسؤال ١٢٣الحالي</h1>
     </header>
 
     <div class="scores">
@@ -238,38 +238,25 @@
             console.error("Error getting game document:", error);
         });
 
-        let currentCategory = null;
-        let initialLoad = true;
+        let visibilityTimeout;
+        let isScreenLocked = false;
 
-        db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
-            .onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    const points = data.points || '...';
-                    const category = data.category || '...';
-
-                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
-                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
-
-                    if (category !== currentCategory) {
-                        currentCategory = category;
-                        if (!initialLoad) {
-                            db.collection("games").doc(gameId).get().then((doc) => {
-                                if (doc.exists) {
-                                    updateScores(doc.data());
-                                }
-                            });
-                        }
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                visibilityTimeout = setTimeout(() => {
+                    if (!isScreenLocked) {
+                        updateLeaveStatus();
                     }
-                    initialLoad = false;
+                }, 1000); // فترة انتظار قصيرة للتحقق من أن المستخدم قد غادر الصفحة فعليًا
+            } else if (document.visibilityState === 'visible') {
+                clearTimeout(visibilityTimeout); // إذا عاد المستخدم للصفحة قبل انتهاء المؤقت، إلغاء عملية المغادرة
+                isScreenLocked = false; // إعادة تعيين حالة قفل الشاشة عند ظهور الصفحة مجددًا
+            }
+        });
 
-                    document.getElementById('voteButton').disabled = category === '...';
-                } else {
-                    console.log("No such document!");
-                }
-            }, (error) => {
-                console.error("Error getting document:", error);
-            });
+        document.addEventListener('resume', function() {
+            isScreenLocked = true;
+        });
 
         async function vote() {
             if (!gameId || !team || !userName) {
@@ -304,35 +291,6 @@
             document.getElementById('voteButton').disabled = true;
         }
 
-        let isScreenLocked = false;
-
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden') {
-                // تأخير صغير للتأكد مما إذا كان المستخدم يغادر الصفحة أو يغلق الشاشة
-                setTimeout(() => {
-                    if (!isScreenLocked && document.visibilityState === 'hidden') {
-                        updateLeaveStatus();
-                    }
-                }, 1000);
-            } else if (document.visibilityState === 'visible') {
-                isScreenLocked = false; // إعادة تعيين حالة قفل الشاشة عند ظهور الصفحة مجددًا
-            }
-        });
-
-        window.addEventListener('beforeunload', updateLeaveStatus);
-        window.addEventListener('unload', updateLeaveStatus);
-
-        window.addEventListener('pageshow', function() {
-            console.log("Page is shown again, user is back.");
-        });
-
-        window.addEventListener('pagehide', function() {
-            console.log("Page is hidden, assuming user is leaving.");
-            if (!isScreenLocked) {
-                updateLeaveStatus();
-            }
-        });
-
         function updateLeaveStatus() {
             console.log("User is leaving the page, updating Firestore...");
             const leaveRef = db.collection("games").doc(gameId).collection("leavePage").doc(userName);
@@ -346,6 +304,13 @@
                 console.error("Error updating Firestore: ", error);
             });
         }
+
+        window.addEventListener('beforeunload', updateLeaveStatus);
+        window.addEventListener('unload', updateLeaveStatus);
+
+        window.addEventListener('pageshow', function() {
+            console.log("Page is shown again, user is back.");
+        });
 
         function showAlert(message) {
             const alertBox = document.getElementById('alertBox');
