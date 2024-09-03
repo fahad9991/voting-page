@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال٣٣٣ الحالي</h1>
+        <h1>التصويت للسؤال ٤٤٤٤   الحالي</h1>
     </header>
 
     <div class="scores">
@@ -325,10 +325,17 @@
         window.addEventListener('unload', updateLeaveStatus);
 
         document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+        // التحقق من أن المستخدم غادر التطبيق أو علامة التبويب، ولكن ليس عند قفل الشاشة
+        setTimeout(() => {
             if (document.visibilityState === 'hidden') {
+                // تأكد أن المستخدم غادر الصفحة بالفعل وليس مجرد قفل الشاشة
                 updateLeaveStatus();
             }
-        });
+        }, 1000); // وقت الانتظار للتأكد
+    }
+});
+
 
         window.addEventListener('pageshow', function() {
             console.log("Page is shown again, user is back.");
