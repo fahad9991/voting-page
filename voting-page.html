@@ -181,7 +181,7 @@
         <p id="voteResult"></p>
     </div>
 
-     <div id="alertBox" class="alert" style="display: none;">
+    <div id="alertBox" class="alert" style="display: none;">
         <span id="alertText"></span>
         <button id="closeAlertButton" onclick="closeAlert()">إغلاق</button>
     </div>
@@ -193,6 +193,7 @@
         const gameId = urlParams.get('gameId');
         const team = urlParams.get('team');
         const userName = urlParams.get('userName');
+
 
         const firebaseConfig = {
                       apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
@@ -323,6 +324,12 @@
         window.addEventListener('beforeunload', updateLeaveStatus);
         window.addEventListener('unload', updateLeaveStatus);
 
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                updateLeaveStatus();
+            }
+        });
+
         window.addEventListener('pageshow', function() {
             console.log("Page is shown again, user is back.");
         });
@@ -358,3 +365,4 @@
     </script>
 </body>
 </html>
+
