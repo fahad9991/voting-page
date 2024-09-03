@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال١١١ الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -308,7 +308,7 @@
 
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'hidden') {
-                // وقت انتظار قصير للتأكد مما إذا كان المستخدم يغادر الصفحة أو يغلق الشاشة
+                // تأخير صغير للتأكد مما إذا كان المستخدم يغادر الصفحة أو يغلق الشاشة
                 setTimeout(() => {
                     if (!isScreenLocked && document.visibilityState === 'hidden') {
                         updateLeaveStatus();
