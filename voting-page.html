@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال الحالي</h1>
+        <h1>التصويت للسؤال١١١ الحالي</h1>
     </header>
 
     <div class="scores">
@@ -310,8 +310,7 @@
             if (document.visibilityState === 'hidden') {
                 // وقت انتظار قصير للتأكد مما إذا كان المستخدم يغادر الصفحة أو يغلق الشاشة
                 setTimeout(() => {
-                    if (document.visibilityState === 'hidden' && !isScreenLocked) {
-                        // يعتبر المستخدم قد غادر الصفحة فقط إذا لم يكن سبب التغيير هو قفل الشاشة
+                    if (!isScreenLocked && document.visibilityState === 'hidden') {
                         updateLeaveStatus();
                     }
                 }, 1000);
@@ -323,11 +322,14 @@
         window.addEventListener('beforeunload', updateLeaveStatus);
         window.addEventListener('unload', updateLeaveStatus);
 
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'visible') {
-                isScreenLocked = false;
-            } else if (document.visibilityState === 'hidden') {
-                isScreenLocked = true;
+        window.addEventListener('pageshow', function() {
+            console.log("Page is shown again, user is back.");
+        });
+
+        window.addEventListener('pagehide', function() {
+            console.log("Page is hidden, assuming user is leaving.");
+            if (!isScreenLocked) {
+                updateLeaveStatus();
             }
         });
 
@@ -344,10 +346,6 @@
                 console.error("Error updating Firestore: ", error);
             });
         }
-
-        window.addEventListener('pageshow', function() {
-            console.log("Page is shown again, user is back.");
-        });
 
         function showAlert(message) {
             const alertBox = document.getElementById('alertBox');
