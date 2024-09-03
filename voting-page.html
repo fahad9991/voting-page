@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال ١٢٣الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -195,7 +195,13 @@
         const userName = urlParams.get('userName');
 
         const firebaseConfig = {
-            // إعدادات Firebase
+            apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
+            authDomain: "triviakw-dfe7f.firebaseapp.com",
+            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
+            projectId: "triviakw-dfe7f",
+            storageBucket: "triviakw-dfe7f.appspot.com",
+            messagingSenderId: "274369788646",
+            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -204,7 +210,22 @@
         document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
 
         function updateScores(data) {
-            // تحديث النقاط
+            const teamOneName = data.teamOneName || 'الفريق الأول';
+            const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+            const teamOneScore = data.teamOneScore || 0;
+            const teamTwoScore = data.teamTwoScore || 0;
+
+            if (team === 'teamOne') {
+                document.getElementById('currentTeamName').innerText = teamTwoName;
+                document.getElementById('currentTeamPoints').innerText = teamTwoScore;
+                document.getElementById('otherTeamName').innerText = teamOneName;
+                document.getElementById('otherTeamPoints').innerText = teamOneScore;
+            } else {
+                document.getElementById('currentTeamName').innerText = teamOneName;
+                document.getElementById('currentTeamPoints').innerText = teamOneScore;
+                document.getElementById('otherTeamName').innerText = teamTwoName;
+                document.getElementById('otherTeamPoints').innerText = teamTwoScore;
+            }
         }
 
         db.collection("games").doc(gameId).onSnapshot((doc) => {
@@ -243,7 +264,73 @@
                 });
             }
         });
+
+        function vote() {
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات التصويت غير مكتملة.';
+                return;
+            }
+
+            const voteButton = document.getElementById('voteButton');
+            voteButton.disabled = true;
+
+            const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
+
+            voteRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل ${doc.data().team}.`;
+                } else {
+                    voteRef.set({ team: team, userName: userName }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم التصويت بنجاح!';
+                        disableVoteButton();
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
+                        voteButton.disabled = false;
+                    });
+                }
+            }).catch((error) => {
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
+                voteButton.disabled = false;
+            });
+        }
+
+        function disableVoteButton() {
+            document.getElementById('voteButton').disabled = true;
+        }
+
+        function showAlert(message) {
+            const alertBox = document.getElementById('alertBox');
+            const alertText = document.getElementById('alertText');
+
+            alertText.innerText = message;
+            alertBox.style.display = 'block';
+        }
+
+        function closeAlert() {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.style.display = 'none';
+        }
+
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('wheel', function (e) {
+            if (e.ctrlKey) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+
+        document.addEventListener('touchmove', function (e) {
+            if (e.scale !== 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
-
