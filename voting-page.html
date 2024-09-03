@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال٢٣ الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -195,14 +195,15 @@
         const userName = urlParams.get('userName');
 
         const firebaseConfig = {
-            apiKey: "API_KEY",
-            authDomain: "AUTH_DOMAIN",
-            databaseURL: "DATABASE_URL",
-            projectId: "PROJECT_ID",
-            storageBucket: "STORAGE_BUCKET",
-            messagingSenderId: "SENDER_ID",
-            appId: "APP_ID"
+                      apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
+            authDomain: "triviakw-dfe7f.firebaseapp.com",
+            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
+            projectId: "triviakw-dfe7f",
+            storageBucket: "triviakw-dfe7f.appspot.com",
+            messagingSenderId: "274369788646",
+            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
+
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
