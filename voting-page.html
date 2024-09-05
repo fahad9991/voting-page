@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال ١٢٣الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -238,27 +238,40 @@
             console.error("Error getting game document:", error);
         });
 
-        let visibilityTimeout;
-        let isScreenLocked = false;
+        let currentCategory = null;
+        let initialLoad = true;
 
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden') {
-                visibilityTimeout = setTimeout(() => {
-                    if (!isScreenLocked) {
-                        updateLeaveStatus();
+        db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const points = data.points || '...';
+                    const category = data.category || '...';
+
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
+                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+
+                    if (category !== currentCategory) {
+                        currentCategory = category;
+                        if (!initialLoad) {
+                            db.collection("games").doc(gameId).get().then((doc) => {
+                                if (doc.exists) {
+                                    updateScores(doc.data());
+                                }
+                            });
+                        }
                     }
-                }, 1000); // فترة انتظار قصيرة للتحقق من أن المستخدم قد غادر الصفحة فعليًا
-            } else if (document.visibilityState === 'visible') {
-                clearTimeout(visibilityTimeout); // إذا عاد المستخدم للصفحة قبل انتهاء المؤقت، إلغاء عملية المغادرة
-                isScreenLocked = false; // إعادة تعيين حالة قفل الشاشة عند ظهور الصفحة مجددًا
-            }
-        });
+                    initialLoad = false;
 
-        document.addEventListener('resume', function() {
-            isScreenLocked = true;
-        });
+                    document.getElementById('voteButton').disabled = category === '...';
+                } else {
+                    console.log("No such document!");
+                }
+            }, (error) => {
+                console.error("Error getting document:", error);
+            });
 
-        async function vote() {
+        function vote() {
             if (!gameId || !team || !userName) {
                 document.getElementById('voteResult').innerText = 'بيانات التصويت غير مكتملة.';
                 return;
@@ -269,47 +282,51 @@
 
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
-            try {
-                const doc = await voteRef.get();
+            voteRef.get().then((doc) => {
                 if (doc.exists) {
                     document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل ${doc.data().team}.`;
                 } else {
-                    await voteRef.set({ team: team, userName: userName });
-                    document.getElementById('voteResult').innerText = 'تم التصويت بنجاح!';
-                    disableVoteButton();
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+                    voteRef.set({ team: team, userName: userName }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم التصويت بنجاح!';
+                        disableVoteButton();
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
+                        voteButton.disabled = false;
+                    });
                 }
-            } catch (error) {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
+            }).catch((error) => {
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
                 voteButton.disabled = false;
-            }
+            });
         }
 
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
         }
 
-        function updateLeaveStatus() {
-            console.log("User is leaving the page, updating Firestore...");
-            const leaveRef = db.collection("games").doc(gameId).collection("leavePage").doc(userName);
-            leaveRef.set({
-                userName: userName,
-                leftAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                console.log("User left page, Firestore updated successfully.");
-                showAlert(`${userName} غادر أو غير الصفحة`);
-            }).catch((error) => {
-                console.error("Error updating Firestore: ", error);
-            });
-        }
+        window.onpopstate = function() {
+            location.reload();
+        };
 
-        window.addEventListener('beforeunload', updateLeaveStatus);
-        window.addEventListener('unload', updateLeaveStatus);
-
-        window.addEventListener('pageshow', function() {
-            console.log("Page is shown again, user is back.");
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                console.log("Document is hidden, updating Firestore...");
+                const leaveRef = db.collection("games").doc(gameId).collection("leavePage").doc(userName);
+                leaveRef.set({
+                    userName: userName,
+                    leftAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    console.log("User left page, Firestore updated successfully.");
+                    showAlert(`${userName} غادر أو غير الصفحة`);
+                }).catch((error) => {
+                    console.error("Error updating Firestore: ", error);
+                });
+            }
         });
 
         function showAlert(message) {
