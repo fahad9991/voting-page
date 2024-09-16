@@ -280,8 +280,7 @@ document.getElementById('voteButton').disabled = category === '...';
                 return;
             }
 
-            const voteButton = document.getElementById('voteButton');
-            voteButton.disabled = true;
+           
 
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
@@ -308,7 +307,9 @@ document.getElementById('voteButton').disabled = category === '...';
             });
         }
 
-       
+        function disableVoteButton() {
+            document.getElementById('voteButton').disabled = true;
+        }
 
         window.onpopstate = function() {
             location.reload();
