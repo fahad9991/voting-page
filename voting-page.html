@@ -263,9 +263,7 @@
                     }
                     initialLoad = false;
 
-
-
-                    
+                    document.getElementById('voteButton').disabled = category === '...';
                 } else {
                     console.log("No such document!");
                 }
@@ -279,6 +277,8 @@
                 return;
             }
 
+            const voteButton = document.getElementById('voteButton');
+            voteButton.disabled = true;
 
             const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
 
@@ -296,14 +296,18 @@
 
                     }).catch((error) => {
                         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
+                        voteButton.disabled = false;
                     });
                 }
             }).catch((error) => {
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
+                voteButton.disabled = false;
             });
         }
 
-       
+        function disableVoteButton() {
+            document.getElementById('voteButton').disabled = true;
+        }
 
         window.onpopstate = function() {
             location.reload();
