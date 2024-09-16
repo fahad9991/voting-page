@@ -263,6 +263,10 @@
                     }
                     initialLoad = false;
 
+
+document.getElementById('voteButton').disabled = category === '...';
+
+                    
                 } else {
                     console.log("No such document!");
                 }
@@ -304,9 +308,7 @@
             });
         }
 
-        function disableVoteButton() {
-            document.getElementById('voteButton').disabled = true;
-        }
+       
 
         window.onpopstate = function() {
             location.reload();
