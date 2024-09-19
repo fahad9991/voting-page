@@ -14,7 +14,6 @@
             touch-action: manipulation;
             margin: 0;
         }
-
         header {
             background-color: #5f00aa;
             padding: 10px;
@@ -23,13 +22,11 @@
             box-sizing: border-box;
             margin: 0;
         }
-
         h1 {
             font-size: 1.2em;
             margin: 0;
             color: #ffffff;
         }
-
         .scores {
             display: flex;
             justify-content: space-between;
@@ -39,35 +36,29 @@
             color: #ffffff;
             margin-bottom: 20px;
         }
-
         .score {
             font-size: 1.2em;
             margin: 0;
             text-align: center;
             flex: 1;
         }
-
         .score .team-name {
             font-weight: bold;
             text-align: center;
         }
-
         .score .team-points {
             font-size: 1.5em;
             margin-top: 5px;
             text-align: center;
         }
-
         .spacer {
             flex: 2;
         }
-
         p {
             font-size: 1.2em;
             margin: 10px 0;
             color: #333;
         }
-
         button {
             background-color: #ff365e;
             color: white;
@@ -81,23 +72,19 @@
             width: 150px;
             height: 150px;
         }
-
         button:hover {
             background-color: #e62e52;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
         }
-
         button:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
         }
-
         #voteResult {
             margin-top: 20px;
             font-size: 1.3em;
             color: #e74c3c;
         }
-
         .container {
             max-width: 600px;
             margin: 0 auto;
@@ -106,25 +93,20 @@
             border-radius: 10px;
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
         }
-
         .info {
             margin-bottom: 20px;
         }
-
         .info p {
             margin: 5px 0;
         }
-
         .question-info {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
         .question-info p {
             margin: 5px 0;
         }
-
         .alert {
             position: fixed;
             top: 20px;
@@ -137,7 +119,6 @@
             box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
             z-index: 1000;
         }
-
         .alert button {
             background-color: #ffffff;
             color: #ff0000;
@@ -152,7 +133,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال ١الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -197,15 +178,10 @@
         const userName = urlParams.get('userName');
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
+            apiKey: "API_KEY",
             authDomain: "triviakw-dfe7f.firebaseapp.com",
-            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
-            projectId: "triviakw-dfe7f",
-            storageBucket: "triviakw-dfe7f.appspot.com",
-            messagingSenderId: "274369788646",
-            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
+            projectId: "triviakw-dfe7f"
         };
-
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -356,72 +332,69 @@
             });
         }
 
-function submitSkip() {
-    if (!gameId || !team || !userName) {
-        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-        return;
-    }
-
-    // مسح الأحداث السابقة المتعلقة بالإجابة أو التخطي
-    clearPreviousAction();
-
-    const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
-
-    skipRef.set({
-        team: team, 
-        userName: userName, 
-        action: "skip", 
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-        
-        // خصم 5 ثواني من الفريق الحالي
-        const timeToDeduct = 5;
-        let timeField = team === "teamOne" ? "teamOneTimeRemaining" : "teamTwoTimeRemaining";
-
-        db.collection("games").doc(gameId).get().then((doc) => {
-            if (doc.exists) {
-                let timeRemaining = doc.data()[timeField];
-                
-                if (timeRemaining > timeToDeduct) {
-                    timeRemaining -= timeToDeduct;
-                } else {
-                    timeRemaining = 0;
-                }
-
-                // تحديث الوقت المتبقي في Firestore
-                db.collection("games").doc(gameId).update({
-                    [timeField]: timeRemaining
-                }).then(() => {
-                    console.log('تم خصم 5 ثواني بنجاح.');
-
-                    // مسح حدث التخطي بعد التحديث
-                    skipRef.delete().then(() => {
-                        console.log('تم مسح حدث التخطي.');
-                    }).catch((error) => {
-                        console.error('حدث خطأ أثناء مسح حدث التخطي:', error);
-                    });
-
-                    // إعادة تحميل الصفحة بعد فترة قصيرة لضمان عرض التحديثات
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
-                }).catch((error) => {
-                    document.getElementById('voteResult').innerText = 'حدث خطأ أثناء خصم الوقت.';
-                    console.error('Error updating time remaining:', error);
-                });
+        function submitSkip() {
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+                return;
             }
-        }).catch((error) => {
-            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء الحصول على البيانات.';
-            console.error('Error getting document:', error);
-        });
-    }).catch((error) => {
-        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-        console.error('Error saving skip action:', error);
-    });
-}
 
+            clearPreviousAction(); // مسح الحدث السابق المتعلق بالتخطي
 
+            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
+
+            skipRef.set({
+                team: team, 
+                userName: userName, 
+                action: "skip", 
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+                
+                // خصم 5 ثواني من الفريق الحالي
+                const timeToDeduct = 5;
+                let timeField = team === "teamOne" ? "teamOneTimeRemaining" : "teamTwoTimeRemaining";
+
+                db.collection("games").doc(gameId).get().then((doc) => {
+                    if (doc.exists) {
+                        let timeRemaining = doc.data()[timeField];
+                        
+                        if (timeRemaining > timeToDeduct) {
+                            timeRemaining -= timeToDeduct;
+                        } else {
+                            timeRemaining = 0;
+                        }
+
+                        // تحديث الوقت المتبقي في Firestore
+                        db.collection("games").doc(gameId).update({
+                            [timeField]: timeRemaining
+                        }).then(() => {
+                            console.log('تم خصم 5 ثواني بنجاح.');
+
+                            // مسح حدث التخطي بعد التحديث
+                            skipRef.delete().then(() => {
+                                console.log('تم مسح حدث التخطي.');
+                            }).catch((error) => {
+                                console.error('حدث خطأ أثناء مسح حدث التخطي:', error);
+                            });
+
+                            // إعادة تحميل الصفحة بعد فترة قصيرة لضمان عرض التحديثات
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        }).catch((error) => {
+                            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء خصم الوقت.';
+                            console.error('Error updating time remaining:', error);
+                        });
+                    }
+                }).catch((error) => {
+                    document.getElementById('voteResult').innerText = 'حدث خطأ أثناء الحصول على البيانات.';
+                    console.error('Error getting document:', error);
+                });
+            }).catch((error) => {
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+                console.error('Error saving skip action:', error);
+            });
+        }
 
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
