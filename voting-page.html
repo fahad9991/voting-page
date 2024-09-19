@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال الحالي</h1>
+        <h1>التصويت للسؤال ١الحالي</h1>
     </header>
 
     <div class="scores">
@@ -389,6 +389,13 @@ function submitSkip() {
                     [timeField]: timeRemaining
                 }).then(() => {
                     console.log('تم خصم 5 ثواني بنجاح.');
+
+                    // مسح حدث التخطي بعد التحديث
+                    skipRef.delete().then(() => {
+                        console.log('تم مسح حدث التخطي.');
+                    }).catch((error) => {
+                        console.error('حدث خطأ أثناء مسح حدث التخطي:', error);
+                    });
 
                     // إعادة تحميل الصفحة بعد فترة قصيرة لضمان عرض التحديثات
                     setTimeout(() => {
