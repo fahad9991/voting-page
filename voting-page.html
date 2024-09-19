@@ -176,6 +176,7 @@
             <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         </div>
 
+        <button id="voteButton" onclick="vote()" disabled>تصويت</button>
         <button id="answerButton" onclick="submitAnswer()" disabled>الإجابة</button>
         <button id="skipButton" onclick="submitSkip()" disabled>التخطي</button>
 
@@ -225,16 +226,6 @@
             }
         }
 
-        function enableButtons() {
-            document.getElementById('answerButton').disabled = false;
-            document.getElementById('skipButton').disabled = false;
-        }
-
-        function disableButtons() {
-            document.getElementById('answerButton').disabled = true;
-            document.getElementById('skipButton').disabled = true;
-        }
-
         db.collection("games").doc(gameId).onSnapshot((doc) => {
             if (doc.exists) {
                 updateScores(doc.data());
@@ -245,16 +236,57 @@
             console.error("Error getting game document:", error);
         });
 
-        db.collection("games").doc(gameId).collection("actions").onSnapshot((snapshot) => {
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                if (data.team !== team) {
-                    enableButtons();  // تمكين الأزرار إذا قام الفريق الآخر بإجراء
+        let currentCategory = null;
+        let initialLoad = true;
+
+        db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const points = data.points || '...';
+                    const category = data.category || '...';
+
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
+                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+
+                    if (category !== currentCategory) {
+                        currentCategory = category;
+                        if (!initialLoad) {
+                            db.collection("games").doc(gameId).get().then((doc) => {
+                                if (doc.exists) {
+                                    updateScores(doc.data());
+                                }
+                            });
+                        }
+                    }
+                    initialLoad = false;
+
+                    document.getElementById('voteButton').disabled = category === '...';
+                    document.getElementById('answerButton').disabled = category === '...';
+                    document.getElementById('skipButton').disabled = category === '...';
                 } else {
-                    disableButtons(); // تعطيل الأزرار عند إجراء الفريق الحالي
+                    console.log("No such document!");
                 }
+            }, (error) => {
+                console.error("Error getting document:", error);
             });
-        });
+
+        function clearPreviousAction() {
+            // مسح الحدث السابق قبل تسجيل الجديد
+            const actionsRef = db.collection("games").doc(gameId).collection("actions");
+
+            actionsRef.get().then(snapshot => {
+                snapshot.forEach(doc => {
+                    doc.ref.delete().then(() => {
+                        console.log("تم مسح الحدث السابق.");
+                    }).catch(error => {
+                        console.error("خطأ أثناء مسح الحدث السابق:", error);
+                    });
+                });
+            }).catch(error => {
+                console.error("خطأ أثناء التحقق من الأحداث:", error);
+            });
+        }
 
         function submitAnswer() {
             if (!gameId || !team || !userName) {
@@ -262,7 +294,7 @@
                 return;
             }
 
-            disableButtons();
+            clearPreviousAction(); // مسح الحدث السابق
 
             const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
@@ -273,8 +305,12 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
+                // تحديث الدور للفريق الآخر
+                db.collection("games").doc(gameId).update({
+                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
+                });
                 setTimeout(() => {
-                    document.getElementById('voteResult').innerText = '';
+                    location.reload();
                 }, 2000);
             }).catch((error) => {
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
@@ -287,7 +323,7 @@
                 return;
             }
 
-            disableButtons();
+            clearPreviousAction(); // مسح الحدث السابق
 
             const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
@@ -298,12 +334,20 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+                // تحديث الدور للفريق الآخر
+                db.collection("games").doc(gameId).update({
+                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
+                });
                 setTimeout(() => {
-                    document.getElementById('voteResult').innerText = '';
+                    location.reload();
                 }, 2000);
             }).catch((error) => {
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
             });
+        }
+
+        function disableVoteButton() {
+            document.getElementById('voteButton').disabled = true;
         }
 
         window.onpopstate = function() {
