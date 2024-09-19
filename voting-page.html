@@ -310,46 +310,65 @@
         }
 
         function submitAnswer() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
+    // تحقق من أن جميع البيانات المطلوبة موجودة
+    if (!gameId || !team || !userName) {
+        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+        return;
+    }
 
-            const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
+
+    const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
             answerRef.get().then((doc) => {
-                if (doc.exists) {
-                    document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
-                } else {
-                    answerRef.set({ team: team, userName: userName, action: "answer" }).then(() => {
-                        document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
-                    }).catch((error) => {
-                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
-                    });
-                }
+        if (doc.exists) {
+            document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
+        } else {
+            // إضافة الطابع الزمني مع البيانات المطلوبة
+            answerRef.set({
+                team: team, 
+                userName: userName, 
+                action: "answer", 
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // إضافة الطابع الزمني
+            }).then(() => {
+                document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
+            }).catch((error) => {
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
+                console.error("Error writing document: ", error); // سجل الخطأ للمساعدة في التحليل
             });
         }
+    }).catch((error) => {
+        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
+        console.error("Error getting document: ", error); // سجل الخطأ للمساعدة في التحليل
+    });
+}
 
-        function submitSkip() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
 
-            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
+           const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
-            skipRef.get().then((doc) => {
-                if (doc.exists) {
-                    document.getElementById('voteResult').innerText = `تم تسجيل التخطي بالفعل بواسطة ${doc.data().team}.`;
-                } else {
-                    skipRef.set({ team: team, userName: userName, action: "skip" }).then(() => {
-                        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                    }).catch((error) => {
-                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-                    });
-                }
+    // التحقق مما إذا كانت البيانات موجودة بالفعل
+    skipRef.get().then((doc) => {
+        if (doc.exists) {
+            document.getElementById('voteResult').innerText = `تم تسجيل التخطي بالفعل بواسطة ${doc.data().team}.`;
+        } else {
+            // إضافة الطابع الزمني مع البيانات المطلوبة
+            skipRef.set({
+                team: team, 
+                userName: userName, 
+                action: "skip", 
+                timestamp: firebase.firestore.FieldValue.serverTimestamp() // إضافة الطابع الزمني
+            }).then(() => {
+                document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+            }).catch((error) => {
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+                console.error("Error writing document: ", error); // سجل الخطأ للمساعدة في التحليل
             });
         }
+    }).catch((error) => {
+        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
+        console.error("Error getting document: ", error); // سجل الخطأ للمساعدة في التحليل
+    });
+}
+
 
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
