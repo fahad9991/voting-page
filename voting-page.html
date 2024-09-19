@@ -370,25 +370,45 @@ function submitSkip() {
     }).then(() => {
         document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
         
-        // تحديث الدور للفريق الآخر بعد التخطي
-        db.collection("games").doc(gameId).update({
-            currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
-        }).then(() => {
-            console.log('تم تحديث الدور للفريق الآخر.');
-            
-            // إعادة تحميل الصفحة بعد فترة قصيرة لضمان عرض التحديثات
-            setTimeout(() => {
-                location.reload();
-            }, 2000);
+        // خصم 5 ثواني من الفريق الحالي
+        const timeToDeduct = 5;
+        let timeField = team === "teamOne" ? "teamOneTimeRemaining" : "teamTwoTimeRemaining";
+
+        db.collection("games").doc(gameId).get().then((doc) => {
+            if (doc.exists) {
+                let timeRemaining = doc.data()[timeField];
+                
+                if (timeRemaining > timeToDeduct) {
+                    timeRemaining -= timeToDeduct;
+                } else {
+                    timeRemaining = 0;
+                }
+
+                // تحديث الوقت المتبقي في Firestore
+                db.collection("games").doc(gameId).update({
+                    [timeField]: timeRemaining
+                }).then(() => {
+                    console.log('تم خصم 5 ثواني بنجاح.');
+
+                    // إعادة تحميل الصفحة بعد فترة قصيرة لضمان عرض التحديثات
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                }).catch((error) => {
+                    document.getElementById('voteResult').innerText = 'حدث خطأ أثناء خصم الوقت.';
+                    console.error('Error updating time remaining:', error);
+                });
+            }
         }).catch((error) => {
-            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تحديث الدور.';
-            console.error('Error updating turn:', error);
+            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء الحصول على البيانات.';
+            console.error('Error getting document:', error);
         });
     }).catch((error) => {
         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
         console.error('Error saving skip action:', error);
     });
 }
+
 
 
         function disableVoteButton() {
