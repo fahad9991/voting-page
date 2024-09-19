@@ -366,8 +366,7 @@ function loadNextQuestion(category) {
                 document.getElementById('questionCategory').innerText = `فئة السؤال: ${questionData.category}`;
                 document.getElementById('questionPoints').innerText = `قيمة السؤال: ${questionData.points} نقطة`;
 
-                // بعد عرض السؤال، يمكن حذفه من قاعدة البيانات (اختياري)
-                snapshot.docs[0].ref.delete();
+                // لا حذف للسؤال بعد عرضه
             } else {
                 document.getElementById('voteResult').innerText = 'لا توجد أسئلة متبقية.';
             }
@@ -377,6 +376,7 @@ function loadNextQuestion(category) {
             console.error('Error loading next question:', error);
         });
 }
+
 
 
 
