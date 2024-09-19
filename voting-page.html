@@ -5,148 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>التصويت</title>
     <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #ffffff;
-            color: #333;
-            text-align: center;
-            padding: 20px;
-            touch-action: manipulation;
-            margin: 0;
-        }
-
-        header {
-            background-color: #5f00aa;
-            padding: 10px;
-            color: #ffffff;
-            width: 100%;
-            box-sizing: border-box;
-            margin: 0;
-        }
-
-        h1 {
-            font-size: 1.2em;
-            margin: 0;
-            color: #ffffff;
-        }
-
-        .scores {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background-color: #5f00aa;
-            color: #ffffff;
-            margin-bottom: 20px;
-        }
-
-        .score {
-            font-size: 1.2em;
-            margin: 0;
-            text-align: center;
-            flex: 1;
-        }
-
-        .score .team-name {
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .score .team-points {
-            font-size: 1.5em;
-            margin-top: 5px;
-            text-align: center;
-        }
-
-        .spacer {
-            flex: 2;
-        }
-
-        p {
-            font-size: 1.2em;
-            margin: 10px 0;
-            color: #333;
-        }
-
-        button {
-            background-color: #ff365e;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            font-size: 1.2em;
-            margin: 10px;
-            cursor: pointer;
-            border-radius: 50%;
-            transition: background-color 0.3s ease;
-            width: 150px;
-            height: 150px;
-        }
-
-        button:hover {
-            background-color: #e62e52;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        button:disabled {
-            background-color: #95a5a6;
-            cursor: not-allowed;
-        }
-
-        #voteResult {
-            margin-top: 20px;
-            font-size: 1.3em;
-            color: #e74c3c;
-        }
-
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .info {
-            margin-bottom: 20px;
-        }
-
-        .info p {
-            margin: 5px 0;
-        }
-
-        .question-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .question-info p {
-            margin: 5px 0;
-        }
-
-        .alert {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #ff0000;
-            color: #ffffff;
-            padding: 10px 20px;
-            border-radius: 5px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-        }
-
-        .alert button {
-            background-color: #ffffff;
-            color: #ff0000;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 3px;
-            margin-left: 10px;
-        }
+        /* إضافة CSS الخاص بالتنسيقات العامة */
     </style>
 </head>
 
@@ -166,7 +25,7 @@
             <div class="team-points" id="otherTeamPoints">...</div>
         </div>
     </div>
-    
+
     <div class="container">
         <div class="info">
             <p id="userNameDisplay">التصويت بواسطة: ...</p>
@@ -193,7 +52,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const gameId = urlParams.get('gameId');
-        const team = urlParams.get('team');
+        const team = urlParams.get('team'); // "teamOne" أو "teamTwo"
         const userName = urlParams.get('userName');
 
         const firebaseConfig = {
@@ -228,7 +87,20 @@
 
         db.collection("games").doc(gameId).onSnapshot((doc) => {
             if (doc.exists) {
-                updateScores(doc.data());
+                const gameData = doc.data();
+                updateScores(gameData);
+
+                // التحقق من الدور الحالي وتفعيل/تعطيل الأزرار بناءً عليه
+                const currentTurn = gameData.currentTurn; // "teamOne" أو "teamTwo"
+                
+                if (currentTurn === team) {
+                    document.getElementById('answerButton').disabled = false;
+                    document.getElementById('skipButton').disabled = false;
+                } else {
+                    document.getElementById('answerButton').disabled = true;
+                    document.getElementById('skipButton').disabled = true;
+                }
+
             } else {
                 console.log("Game document not found!");
             }
@@ -236,65 +108,11 @@
             console.error("Error getting game document:", error);
         });
 
-        let currentCategory = null;
-        let initialLoad = true;
-
-        db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
-            .onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    const points = data.points || '...';
-                    const category = data.category || '...';
-
-                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
-                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
-
-                    if (category !== currentCategory) {
-                        currentCategory = category;
-                        if (!initialLoad) {
-                            db.collection("games").doc(gameId).get().then((doc) => {
-                                if (doc.exists) {
-                                    updateScores(doc.data());
-                                }
-                            });
-                        }
-                    }
-                    initialLoad = false;
-
-                    document.getElementById('voteButton').disabled = category === '...';
-                    document.getElementById('answerButton').disabled = category === '...';
-                    document.getElementById('skipButton').disabled = category === '...';
-                } else {
-                    console.log("No such document!");
-                }
-            }, (error) => {
-                console.error("Error getting document:", error);
-            });
-
-        function clearPreviousAction() {
-            // مسح الحدث السابق قبل تسجيل الجديد
-            const actionsRef = db.collection("games").doc(gameId).collection("actions");
-
-            actionsRef.get().then(snapshot => {
-                snapshot.forEach(doc => {
-                    doc.ref.delete().then(() => {
-                        console.log("تم مسح الحدث السابق.");
-                    }).catch(error => {
-                        console.error("خطأ أثناء مسح الحدث السابق:", error);
-                    });
-                });
-            }).catch(error => {
-                console.error("خطأ أثناء التحقق من الأحداث:", error);
-            });
-        }
-
         function submitAnswer() {
             if (!gameId || !team || !userName) {
                 document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
                 return;
             }
-
-            clearPreviousAction(); // مسح الحدث السابق
 
             const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
@@ -305,7 +123,6 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
-                // تحديث الدور للفريق الآخر
                 db.collection("games").doc(gameId).update({
                     currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                 });
@@ -323,8 +140,6 @@
                 return;
             }
 
-            clearPreviousAction(); // مسح الحدث السابق
-
             const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
             skipRef.set({
@@ -334,7 +149,6 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                // تحديث الدور للفريق الآخر
                 db.collection("games").doc(gameId).update({
                     currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                 });
@@ -345,24 +159,6 @@
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
             });
         }
-
-        function disableVoteButton() {
-            document.getElementById('voteButton').disabled = true;
-        }
-
-        window.onpopstate = function() {
-            location.reload();
-        };
-
-        document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'hidden') {
-                const leaveRef = db.collection("games").doc(gameId).collection("leavePage").doc(userName);
-                leaveRef.set({
-                    userName: userName,
-                    leftAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-        });
     </script>
 </body>
 </html>
