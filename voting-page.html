@@ -197,13 +197,9 @@
         const userName = urlParams.get('userName');
 
         const firebaseConfig = {
-            apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
+            apiKey: "API_KEY",
             authDomain: "triviakw-dfe7f.firebaseapp.com",
-            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
-            projectId: "triviakw-dfe7f",
-            storageBucket: "triviakw-dfe7f.appspot.com",
-            messagingSenderId: "274369788646",
-            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
+            projectId: "triviakw-dfe7f"
         };
 
         firebase.initializeApp(firebaseConfig);
@@ -310,52 +306,39 @@
         }
 
         function submitAnswer() {
-    if (!gameId || !team || !userName) {
-        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-        console.log('البيانات غير مكتملة: gameId:', gameId, 'team:', team, 'userName:', userName);
-        return;
-    }
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+                return;
+            }
 
-    console.log('تسجيل الإجابة: gameId:', gameId, 'team:', team, 'userName:', userName); // تتبع البيانات المرسلة
+            const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
-    const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
-
-    answerRef.get().then((doc) => {
-        if (doc.exists) {
-            document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
-        } else {
-            answerRef.set({
-                team: team,
-                userName: userName,
-                action: "answer",
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
-                console.log(`تم تسجيل الإجابة بنجاح لفريق ${team}`);
-                
-                // تغيير الدور بعد تسجيل الإجابة
-                db.collection("games").doc(gameId).update({
-                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
-                }).then(() => {
-                    console.log(`تم تغيير الدور إلى ${team === "teamOne" ? "teamTwo" : "teamOne"}`);
-                }).catch((error) => {
-                    console.error("خطأ أثناء تحديث الدور:", error);
-                });
-
-                setTimeout(() => {
-                    location.reload(); // إعادة تحميل الصفحة بعد نجاح الإجابة
-                }, 2000);
+            answerRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
+                } else {
+                    answerRef.set({
+                        team: team, 
+                        userName: userName, 
+                        action: "answer", 
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
+                        // تحديث الدور للفريق الآخر
+                        db.collection("games").doc(gameId).update({
+                            currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
+                        });
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
+                    });
+                }
             }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
-                console.error("خطأ أثناء تسجيل الإجابة:", error); // تتبع الخطأ
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
             });
         }
-    }).catch((error) => {
-        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
-        console.error("خطأ أثناء التحقق من البيانات:", error); // تتبع الخطأ
-    });
-}
-
 
         function submitSkip() {
             if (!gameId || !team || !userName) {
@@ -370,19 +353,18 @@
                     document.getElementById('voteResult').innerText = `تم تسجيل التخطي بالفعل بواسطة ${doc.data().team}.`;
                 } else {
                     skipRef.set({
-                        team: team,
-                        userName: userName,
-                        action: "skip",
+                        team: team, 
+                        userName: userName, 
+                        action: "skip", 
                         timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     }).then(() => {
                         document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                        console.log(`تم تسجيل التخطي من ${userName} لفريق ${team}`);
-                        // تغيير الدور
+                        // تحديث الدور للفريق الآخر
                         db.collection("games").doc(gameId).update({
                             currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                         });
                         setTimeout(() => {
-                            location.reload(); // إعادة تحميل الصفحة بعد نجاح التخطي
+                            location.reload();
                         }, 2000);
                     }).catch((error) => {
                         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
@@ -403,48 +385,13 @@
 
         document.addEventListener('visibilitychange', function() {
             if (document.visibilityState === 'hidden') {
-                console.log("Document is hidden, updating Firestore...");
                 const leaveRef = db.collection("games").doc(gameId).collection("leavePage").doc(userName);
                 leaveRef.set({
                     userName: userName,
                     leftAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    console.log("User left page, Firestore updated successfully.");
-                    showAlert(`${userName} غادر أو غير الصفحة`);
-                }).catch((error) => {
-                    console.error("Error updating Firestore: ", error);
                 });
             }
         });
-
-        function showAlert(message) {
-            const alertBox = document.getElementById('alertBox');
-            const alertText = document.getElementById('alertText');
-
-            alertText.innerText = message;
-            alertBox.style.display = 'block';
-        }
-
-        function closeAlert() {
-            const alertBox = document.getElementById('alertBox');
-            alertBox.style.display = 'none';
-        }
-
-        document.addEventListener('gesturestart', function (e) {
-            e.preventDefault();
-        });
-
-        document.addEventListener('wheel', function (e) {
-            if (e.ctrlKey) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        document.addEventListener('touchmove', function (e) {
-            if (e.scale !== 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
     </script>
 </body>
 </html>
