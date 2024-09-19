@@ -351,34 +351,45 @@
             });
         }
 
-        function submitSkip() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
+function submitSkip() {
+    if (!gameId || !team || !userName) {
+        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+        return;
+    }
 
-            clearPreviousAction(); // مسح الحدث السابق المتعلق بالتخطي
+    // مسح الأحداث السابقة المتعلقة بالإجابة أو التخطي
+    clearPreviousAction();
 
-            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
+    const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
-            skipRef.set({
-                team: team, 
-                userName: userName, 
-                action: "skip", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                // تحديث الدور للفريق الآخر
-                db.collection("games").doc(gameId).update({
-                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
-                });
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-            });
-        }
+    skipRef.set({
+        team: team, 
+        userName: userName, 
+        action: "skip", 
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+        
+        // تحديث الدور للفريق الآخر بعد التخطي
+        db.collection("games").doc(gameId).update({
+            currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
+        }).then(() => {
+            console.log('تم تحديث الدور للفريق الآخر.');
+            
+            // إعادة تحميل الصفحة بعد فترة قصيرة لضمان عرض التحديثات
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        }).catch((error) => {
+            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تحديث الدور.';
+            console.error('Error updating turn:', error);
+        });
+    }).catch((error) => {
+        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+        console.error('Error saving skip action:', error);
+    });
+}
+
 
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
