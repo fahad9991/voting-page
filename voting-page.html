@@ -310,40 +310,52 @@
         }
 
         function submitAnswer() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
+    if (!gameId || !team || !userName) {
+        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+        console.log('البيانات غير مكتملة: gameId:', gameId, 'team:', team, 'userName:', userName);
+        return;
+    }
 
-            const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
+    console.log('تسجيل الإجابة: gameId:', gameId, 'team:', team, 'userName:', userName); // تتبع البيانات المرسلة
 
-            answerRef.get().then((doc) => {
-                if (doc.exists) {
-                    document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
-                } else {
-                    answerRef.set({
-                        team: team,
-                        userName: userName,
-                        action: "answer",
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    }).then(() => {
-                        document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
-                        console.log(`تم تسجيل الإجابة من ${userName} لفريق ${team}`);
-                        // تغيير الدور
-                        db.collection("games").doc(gameId).update({
-                            currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
-                        });
-                        setTimeout(() => {
-                            location.reload(); // إعادة تحميل الصفحة بعد نجاح الإجابة
-                        }, 2000);
-                    }).catch((error) => {
-                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
-                    });
-                }
+    const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
+
+    answerRef.get().then((doc) => {
+        if (doc.exists) {
+            document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
+        } else {
+            answerRef.set({
+                team: team,
+                userName: userName,
+                action: "answer",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(() => {
+                document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
+                console.log(`تم تسجيل الإجابة بنجاح لفريق ${team}`);
+                
+                // تغيير الدور بعد تسجيل الإجابة
+                db.collection("games").doc(gameId).update({
+                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
+                }).then(() => {
+                    console.log(`تم تغيير الدور إلى ${team === "teamOne" ? "teamTwo" : "teamOne"}`);
+                }).catch((error) => {
+                    console.error("خطأ أثناء تحديث الدور:", error);
+                });
+
+                setTimeout(() => {
+                    location.reload(); // إعادة تحميل الصفحة بعد نجاح الإجابة
+                }, 2000);
             }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
+                console.error("خطأ أثناء تسجيل الإجابة:", error); // تتبع الخطأ
             });
         }
+    }).catch((error) => {
+        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
+        console.error("خطأ أثناء التحقق من البيانات:", error); // تتبع الخطأ
+    });
+}
+
 
         function submitSkip() {
             if (!gameId || !team || !userName) {
