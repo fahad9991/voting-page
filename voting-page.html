@@ -280,29 +280,6 @@
             }, (error) => {
                 console.error("Error getting document:", error);
             });
-function disableButtons() {
-    // تعطيل الأزرار وتغيير لونها إلى رمادي
-    document.getElementById('voteButton').disabled = true;
-    document.getElementById('voteButton').style.backgroundColor = '#95a5a6';
-
-    document.getElementById('answerButton').disabled = true;
-    document.getElementById('answerButton').style.backgroundColor = '#95a5a6';
-
-    document.getElementById('skipButton').disabled = true;
-    document.getElementById('skipButton').style.backgroundColor = '#95a5a6';
-}
-
-function enableButtons() {
-    // تمكين الأزرار وإعادة اللون الأصلي
-    document.getElementById('voteButton').disabled = false;
-    document.getElementById('voteButton').style.backgroundColor = '#ff365e';
-
-    document.getElementById('answerButton').disabled = false;
-    document.getElementById('answerButton').style.backgroundColor = '#ff365e';
-
-    document.getElementById('skipButton').disabled = false;
-    document.getElementById('skipButton').style.backgroundColor = '#ff365e';
-}
 
         function clearPreviousAction() {
             // مسح الحدث السابق قبل تسجيل الجديد
@@ -321,7 +298,7 @@ function enableButtons() {
             });
         }
 
-function submitAnswer() {
+        function submitAnswer() {
     if (!gameId || !team || !userName) {
         document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
         return;
@@ -379,6 +356,30 @@ function submitSkip() {
     }).catch((error) => {
         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
     });
+}
+
+function disableButtons() {
+    // تعطيل الأزرار وتغيير لونها إلى رمادي
+    document.getElementById('voteButton').disabled = true;
+    document.getElementById('voteButton').style.backgroundColor = '#95a5a6';
+
+    document.getElementById('answerButton').disabled = true;
+    document.getElementById('answerButton').style.backgroundColor = '#95a5a6';
+
+    document.getElementById('skipButton').disabled = true;
+    document.getElementById('skipButton').style.backgroundColor = '#95a5a6';
+}
+
+function enableButtons() {
+    // تمكين الأزرار وإعادة اللون الأصلي
+    document.getElementById('voteButton').disabled = false;
+    document.getElementById('voteButton').style.backgroundColor = '#ff365e';
+
+    document.getElementById('answerButton').disabled = false;
+    document.getElementById('answerButton').style.backgroundColor = '#ff365e';
+
+    document.getElementById('skipButton').disabled = false;
+    document.getElementById('skipButton').style.backgroundColor = '#ff365e';
 }
 
 
