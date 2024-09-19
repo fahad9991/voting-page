@@ -310,73 +310,76 @@
         }
 
         function submitAnswer() {
-    if (!gameId || !team || !userName) {
-        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-        return;
-    }
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+                return;
+            }
 
-    const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
+            const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
-    answerRef.get().then((doc) => {
-        if (doc.exists) {
-            document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
-        } else {
-            answerRef.set({
-                team: team, 
-                userName: userName, 
-                action: "answer", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
-                console.log(`تم تسجيل الإجابة من ${userName} لفريق ${team}`); // رسالة تتبع
-                // إرسال حدث لتغيير الدور في التطبيق
-                db.collection("games").doc(gameId).update({ currentTurn: "teamTwo" }); // مثال على تغيير الدور
-                setTimeout(() => {
-                    location.reload(); // إعادة تحميل الصفحة بعد نجاح الإجابة
-                }, 2000);
+            answerRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
+                } else {
+                    answerRef.set({
+                        team: team,
+                        userName: userName,
+                        action: "answer",
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
+                        console.log(`تم تسجيل الإجابة من ${userName} لفريق ${team}`);
+                        // تغيير الدور
+                        db.collection("games").doc(gameId).update({
+                            currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
+                        });
+                        setTimeout(() => {
+                            location.reload(); // إعادة تحميل الصفحة بعد نجاح الإجابة
+                        }, 2000);
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
+                    });
+                }
             }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
             });
         }
-    }).catch((error) => {
-        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
-    });
-}
 
-function submitSkip() {
-    if (!gameId || !team || !userName) {
-        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-        return;
-    }
+        function submitSkip() {
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+                return;
+            }
 
-    const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
+            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
-    skipRef.get().then((doc) => {
-        if (doc.exists) {
-            document.getElementById('voteResult').innerText = `تم تسجيل التخطي بالفعل بواسطة ${doc.data().team}.`;
-        } else {
-            skipRef.set({
-                team: team, 
-                userName: userName, 
-                action: "skip", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                console.log(`تم تسجيل التخطي من ${userName} لفريق ${team}`); // رسالة تتبع
-                // إرسال حدث لتغيير الدور في التطبيق
-                db.collection("games").doc(gameId).update({ currentTurn: "teamTwo" }); // مثال على تغيير الدور
-                setTimeout(() => {
-                    location.reload(); // إعادة تحميل الصفحة بعد نجاح التخطي
-                }, 2000);
+            skipRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم تسجيل التخطي بالفعل بواسطة ${doc.data().team}.`;
+                } else {
+                    skipRef.set({
+                        team: team,
+                        userName: userName,
+                        action: "skip",
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+                        console.log(`تم تسجيل التخطي من ${userName} لفريق ${team}`);
+                        // تغيير الدور
+                        db.collection("games").doc(gameId).update({
+                            currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
+                        });
+                        setTimeout(() => {
+                            location.reload(); // إعادة تحميل الصفحة بعد نجاح التخطي
+                        }, 2000);
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+                    });
+                }
             }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
             });
         }
-    }).catch((error) => {
-        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من البيانات.';
-    });
-}
-
 
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
