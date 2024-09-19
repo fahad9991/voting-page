@@ -67,19 +67,7 @@
             margin: 10px 0;
             color: #333;
         }
-button {
-    background-color: #ff365e; /* لون خلفية الزر الافتراضي */
-    color: white; /* لون النص */
-    border: none;
-    padding: 15px 30px;
-    font-size: 1.2em;
-    margin: 10px;
-    cursor: pointer;
-    border-radius: 8px;
-    transition: background-color 0.3s ease;
-    width: 150px;
-    height: 150px;
-}
+
 
 button:hover {
     background-color: #e62e52;
@@ -280,6 +268,7 @@ db.collection("games").doc(gameId).collection("challengeState").doc(userName)
             console.log("لم يتم العثور على حالة التحدي.");
         }
     });
+
 
         db.collection("games").doc(gameId).onSnapshot((doc) => {
             if (doc.exists) {
