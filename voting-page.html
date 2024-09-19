@@ -82,6 +82,11 @@
             height: 150px;
         }
 
+        button:hover {
+            background-color: #e62e52;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
         button:disabled {
             background-color: #95a5a6;
             cursor: not-allowed;
@@ -202,24 +207,86 @@
 
         document.getElementById('userNameDisplay').innerText = `التصويت بواسطة: ${userName}`;
 
-        let currentTurn = null;
+        function updateScores(data) {
+            const teamOneName = data.teamOneName || 'الفريق الأول';
+            const teamTwoName = data.teamTwoName || 'الفريق الثاني';
+            const teamOneScore = data.teamOneScore || 0;
+            const teamTwoScore = data.teamTwoScore || 0;
 
-        // تحديث حالة الأزرار بناءً على الفريق الحالي
-        function updateButtonState(turn) {
-            const isCurrentTeam = (turn === team);
-            document.getElementById('answerButton').disabled = !isCurrentTeam;
-            document.getElementById('skipButton').disabled = !isCurrentTeam;
+            if (team === 'teamOne') {
+                document.getElementById('currentTeamName').innerText = teamTwoName;
+                document.getElementById('currentTeamPoints').innerText = teamTwoScore;
+                document.getElementById('otherTeamName').innerText = teamOneName;
+                document.getElementById('otherTeamPoints').innerText = teamOneScore;
+            } else {
+                document.getElementById('currentTeamName').innerText = teamOneName;
+                document.getElementById('currentTeamPoints').innerText = teamOneScore;
+                document.getElementById('otherTeamName').innerText = teamTwoName;
+                document.getElementById('otherTeamPoints').innerText = teamTwoScore;
+            }
         }
 
-        // مراقبة الدور الحالي
         db.collection("games").doc(gameId).onSnapshot((doc) => {
             if (doc.exists) {
-                currentTurn = doc.data().currentTurn;
-                updateButtonState(currentTurn);
+                updateScores(doc.data());
+            } else {
+                console.log("Game document not found!");
             }
         }, (error) => {
             console.error("Error getting game document:", error);
         });
+
+        let currentCategory = null;
+        let initialLoad = true;
+
+        db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
+            .onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    const points = data.points || '...';
+                    const category = data.category || '...';
+
+                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
+                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+
+                    if (category !== currentCategory) {
+                        currentCategory = category;
+                        if (!initialLoad) {
+                            db.collection("games").doc(gameId).get().then((doc) => {
+                                if (doc.exists) {
+                                    updateScores(doc.data());
+                                }
+                            });
+                        }
+                    }
+                    initialLoad = false;
+
+                    document.getElementById('voteButton').disabled = category === '...';
+                    document.getElementById('answerButton').disabled = category === '...';
+                    document.getElementById('skipButton').disabled = category === '...';
+                } else {
+                    console.log("No such document!");
+                }
+            }, (error) => {
+                console.error("Error getting document:", error);
+            });
+
+        function clearPreviousAction() {
+            // مسح الحدث السابق قبل تسجيل الجديد
+            const actionsRef = db.collection("games").doc(gameId).collection("actions");
+
+            actionsRef.get().then(snapshot => {
+                snapshot.forEach(doc => {
+                    doc.ref.delete().then(() => {
+                        console.log("تم مسح الحدث السابق.");
+                    }).catch(error => {
+                        console.error("خطأ أثناء مسح الحدث السابق:", error);
+                    });
+                });
+            }).catch(error => {
+                console.error("خطأ أثناء التحقق من الأحداث:", error);
+            });
+        }
 
         function submitAnswer() {
             if (!gameId || !team || !userName) {
@@ -227,9 +294,7 @@
                 return;
             }
 
-            // تعطيل الزر فوراً بعد الضغط
-            document.getElementById('answerButton').disabled = true;
-            document.getElementById('skipButton').disabled = true;
+            clearPreviousAction(); // مسح الحدث السابق
 
             const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
@@ -244,10 +309,11 @@
                 db.collection("games").doc(gameId).update({
                     currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                 });
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
             }).catch((error) => {
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
-                document.getElementById('answerButton').disabled = false; // إعادة تمكين الزر في حالة الخطأ
-                document.getElementById('skipButton').disabled = false;
             });
         }
 
@@ -257,9 +323,7 @@
                 return;
             }
 
-            // تعطيل الزر فوراً بعد الضغط
-            document.getElementById('answerButton').disabled = true;
-            document.getElementById('skipButton').disabled = true;
+            clearPreviousAction(); // مسح الحدث السابق
 
             const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
@@ -274,12 +338,31 @@
                 db.collection("games").doc(gameId).update({
                     currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                 });
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
             }).catch((error) => {
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-                document.getElementById('answerButton').disabled = false; // إعادة تمكين الزر في حالة الخطأ
-                document.getElementById('skipButton').disabled = false;
             });
         }
+
+        function disableVoteButton() {
+            document.getElementById('voteButton').disabled = true;
+        }
+
+        window.onpopstate = function() {
+            location.reload();
+        };
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'hidden') {
+                const leaveRef = db.collection("games").doc(gameId).collection("leavePage").doc(userName);
+                leaveRef.set({
+                    userName: userName,
+                    leftAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }
+        });
     </script>
 </body>
 </html>
