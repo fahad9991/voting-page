@@ -333,68 +333,35 @@
         }
 
         function submitSkip() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
+    if (!gameId || !team || !userName) {
+        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+        return;
+    }
 
-            clearPreviousAction(); // مسح الحدث السابق المتعلق بالتخطي
+    // مسح الأحداث السابقة المتعلقة بالتخطي
+    clearPreviousAction();
 
-            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
+    const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
-            skipRef.set({
-                team: team, 
-                userName: userName, 
-                action: "skip", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                
-                // خصم 5 ثواني من الفريق الحالي
-                const timeToDeduct = 5;
-                let timeField = team === "teamOne" ? "teamOneTimeRemaining" : "teamTwoTimeRemaining";
+    skipRef.set({
+        team: team, 
+        userName: userName, 
+        action: "skip", 
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
 
-                db.collection("games").doc(gameId).get().then((doc) => {
-                    if (doc.exists) {
-                        let timeRemaining = doc.data()[timeField];
-                        
-                        if (timeRemaining > timeToDeduct) {
-                            timeRemaining -= timeToDeduct;
-                        } else {
-                            timeRemaining = 0;
-                        }
+        // لا حاجة لخصم الوقت في قاعدة البيانات، التطبيق يقوم بذلك
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    }).catch((error) => {
+        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+        console.error('Error saving skip action:', error);
+    });
+}
 
-                        // تحديث الوقت المتبقي في Firestore
-                        db.collection("games").doc(gameId).update({
-                            [timeField]: timeRemaining
-                        }).then(() => {
-                            console.log('تم خصم 5 ثواني بنجاح.');
 
-                            // مسح حدث التخطي بعد التحديث
-                            skipRef.delete().then(() => {
-                                console.log('تم مسح حدث التخطي.');
-                            }).catch((error) => {
-                                console.error('حدث خطأ أثناء مسح حدث التخطي:', error);
-                            });
-
-                            // إعادة تحميل الصفحة بعد فترة قصيرة لضمان عرض التحديثات
-                            setTimeout(() => {
-                                location.reload();
-                            }, 2000);
-                        }).catch((error) => {
-                            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء خصم الوقت.';
-                            console.error('Error updating time remaining:', error);
-                        });
-                    }
-                }).catch((error) => {
-                    document.getElementById('voteResult').innerText = 'حدث خطأ أثناء الحصول على البيانات.';
-                    console.error('Error getting document:', error);
-                });
-            }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-                console.error('Error saving skip action:', error);
-            });
-        }
 
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
