@@ -152,7 +152,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال١٢ الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -271,9 +271,43 @@
                 console.error("Error getting document:", error);
             });
 
-        function clearPreviousAction() {
-            // مسح الحدث السابق قبل تسجيل الجديد
-            const actionsRef = db.collection("games").doc(gameId).collection("actions");
+        function vote() {
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات التصويت غير مكتملة.';
+                return;
+            }
+
+            const voteButton = document.getElementById('voteButton');
+            voteButton.disabled = true;
+
+            const voteRef = db.collection("games").doc(gameId).collection("votes").doc("firstVote");
+
+            voteRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم التصويت بالفعل من قبل ${doc.data().team}.`;
+                } else {
+                    voteRef.set({ team: team, userName: userName }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم التصويت بنجاح!';
+                        disableVoteButton();
+
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
+                        voteButton.disabled = false;
+                    });
+                }
+            }).catch((error) => {
+                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
+                voteButton.disabled = false;
+            });
+        }
+
+        function clearPreviousAction(actionType) {
+            // مسح فقط الأحداث المتعلقة بـ "answer" و "skip"
+            const actionsRef = db.collection("games").doc(gameId).collection("actions").where("action", "in", ["answer", "skip"]);
 
             actionsRef.get().then(snapshot => {
                 snapshot.forEach(doc => {
@@ -294,7 +328,7 @@
                 return;
             }
 
-            clearPreviousAction(); // مسح الحدث السابق
+            clearPreviousAction("answer"); // مسح الحدث السابق المتعلق بالإجابة
 
             const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
@@ -323,7 +357,7 @@
                 return;
             }
 
-            clearPreviousAction(); // مسح الحدث السابق
+            clearPreviousAction("skip"); // مسح الحدث السابق المتعلق بالتخطي
 
             const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
