@@ -227,14 +227,24 @@
         }
 
         db.collection("games").doc(gameId).onSnapshot((doc) => {
-            if (doc.exists) {
-                updateScores(doc.data());
-            } else {
-                console.log("Game document not found!");
-            }
-        }, (error) => {
-            console.error("Error getting game document:", error);
-        });
+    if (doc.exists) {
+        const data = doc.data();
+        
+        updateScores(data);
+        
+        // تحقق من الفريق الحالي
+        if (data.currentTurn === team) {
+            enableButtons(); // تمكين الأزرار للفريق الحالي
+        } else {
+            disableButtons(); // تعطيل الأزرار للفريق الآخر
+        }
+    } else {
+        console.log("Game document not found!");
+    }
+}, (error) => {
+    console.error("Error getting game document:", error);
+});
+
 
         let currentCategory = null;
         let initialLoad = true;
@@ -288,63 +298,7 @@
             });
         }
 
-        function submitAnswer() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
 
-            clearPreviousAction(); // مسح الحدث السابق
-
-            const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
-
-            answerRef.set({
-                team: team, 
-                userName: userName, 
-                action: "answer", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
-                // تحديث الدور للفريق الآخر
-                db.collection("games").doc(gameId).update({
-                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
-                });
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
-            });
-        }
-
-        function submitSkip() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
-
-            clearPreviousAction(); // مسح الحدث السابق
-
-            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
-
-            skipRef.set({
-                team: team, 
-                userName: userName, 
-                action: "skip", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                // تحديث الدور للفريق الآخر
-                db.collection("games").doc(gameId).update({
-                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
-                });
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
-            }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-            });
-        }
 
         function disableVoteButton() {
             document.getElementById('voteButton').disabled = true;
