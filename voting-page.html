@@ -133,7 +133,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤال الحالي</h1>
+        <h1>التصويت للسؤالs الحالي</h1>
     </header>
 
     <div class="scores">
@@ -329,47 +329,55 @@
             });
         }
 
-        function submitSkip() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
+function submitSkip() {
+    if (!gameId || !team || !userName) {
+        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+        return;
+    }
+
+    // مسح الأحداث السابقة المتعلقة بالتخطي
+    clearPreviousAction();
+
+    const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
+
+    skipRef.set({
+        team: team,
+        userName: userName,
+        action: "skip",
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+        loadNextQuestion("الفئة_المحددة"); // تغيير السؤال فورًا عند التخطي وإعطاء الفئة
+    }).catch((error) => {
+        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+        console.error('Error saving skip action:', error);
+    });
+}
+
+function loadNextQuestion(category) {
+    db.collection("games").doc(gameId).collection("questions")
+        .where("category", "==", category) // جلب الأسئلة بناءً على الفئة المحددة
+        .orderBy("timestamp") // ترتيب الأسئلة حسب الوقت أو أي معيار آخر
+        .limit(1)
+        .get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                const questionData = snapshot.docs[0].data();
+                document.getElementById('questionCategory').innerText = `فئة السؤال: ${questionData.category}`;
+                document.getElementById('questionPoints').innerText = `قيمة السؤال: ${questionData.points} نقطة`;
+
+                // بعد عرض السؤال، يمكن حذفه من قاعدة البيانات (اختياري)
+                snapshot.docs[0].ref.delete();
+            } else {
+                document.getElementById('voteResult').innerText = 'لا توجد أسئلة متبقية.';
             }
+        })
+        .catch(error => {
+            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تحميل السؤال التالي.';
+            console.error('Error loading next question:', error);
+        });
+}
 
-            // مسح الأحداث السابقة المتعلقة بالتخطي
-            clearPreviousAction();
-
-            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
-
-            skipRef.set({
-                team: team, 
-                userName: userName, 
-                action: "skip", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-                loadNextQuestion(); // تغيير السؤال فورًا عند التخطي
-            }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-                console.error('Error saving skip action:', error);
-            });
-        }
-        function loadNextQuestion() {
-            db.collection("games").doc(gameId).collection("questions").orderBy("timestamp").limit(1).get().then(snapshot => {
-                if (!snapshot.empty) {
-                    const questionData = snapshot.docs[0].data();
-                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${questionData.category}`;
-                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${questionData.points} نقطة`;
-
-                    // بعد عرض السؤال، يمكن حذفه من قاعدة البيانات (اختياري)
-                    snapshot.docs[0].ref.delete();
-                } else {
-                    document.getElementById('voteResult').innerText = 'لا توجد أسئلة متبقية.';
-                }
-            }).catch(error => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تحميل السؤال التالي.';
-                console.error('Error loading next question:', error);
-            });
-        }
 
 
         // الاستماع لتغييرات الأحداث
