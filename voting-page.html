@@ -2,7 +2,7 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>التصويت</title>
     <style>
         body {
@@ -305,7 +305,8 @@
             });
         }
 
-        function clearPreviousAction(actionType) {
+        function clearPreviousAction() {
+            // مسح فقط الأحداث المتعلقة بـ "answer" و "skip"
             const actionsRef = db.collection("games").doc(gameId).collection("actions").where("action", "in", ["answer", "skip"]);
 
             actionsRef.get().then(snapshot => {
@@ -327,7 +328,7 @@
                 return;
             }
 
-            clearPreviousAction("answer");
+            clearPreviousAction(); // مسح الحدث السابق المتعلق بالإجابة
 
             const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
 
@@ -338,6 +339,7 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
+                // تحديث الدور للفريق الآخر
                 db.collection("games").doc(gameId).update({
                     currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                 });
@@ -355,7 +357,7 @@
                 return;
             }
 
-            clearPreviousAction("skip");
+            clearPreviousAction(); // مسح الحدث السابق المتعلق بالتخطي
 
             const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
 
@@ -366,6 +368,7 @@
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
             }).then(() => {
                 document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+                // تحديث الدور للفريق الآخر
                 db.collection("games").doc(gameId).update({
                     currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                 });
@@ -395,23 +398,20 @@
             }
         });
 
-        // منع التكبير باستخدام عجلة الفأرة أو Ctrl + النقر
-        document.addEventListener('wheel', function(e) {
+        // منع تكبير الصفحة باستخدام اللمس أو الفأرة
+        document.addEventListener('gesturestart', function (e) {
+            e.preventDefault();
+        });
+
+        document.addEventListener('wheel', function (e) {
             if (e.ctrlKey) {
                 e.preventDefault();
             }
         }, { passive: false });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && (e.key === '=' || e.key === '-' || e.key === '0')) {
+        document.addEventListener('touchmove', function (e) {
+            if (e.scale !== 1) {
                 e.preventDefault();
-            }
-        });
-
-        // منع التكبير باستخدام اللمس (تكبير بإصبعين)
-        document.addEventListener('touchmove', function(event) {
-            if (event.scale !== 1) {
-                event.preventDefault();
             }
         }, { passive: false });
     </script>
