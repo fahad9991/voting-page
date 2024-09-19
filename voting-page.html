@@ -86,27 +86,31 @@
         }
 
         db.collection("games").doc(gameId).onSnapshot((doc) => {
-            if (doc.exists) {
-                const gameData = doc.data();
-                updateScores(gameData);
+    if (doc.exists) {
+        const gameData = doc.data();
+        updateScores(gameData);
 
-                // التحقق من الدور الحالي وتفعيل/تعطيل الأزرار بناءً عليه
-                const currentTurn = gameData.currentTurn; // "teamOne" أو "teamTwo"
-                
-                if (currentTurn === team) {
-                    document.getElementById('answerButton').disabled = false;
-                    document.getElementById('skipButton').disabled = false;
-                } else {
-                    document.getElementById('answerButton').disabled = true;
-                    document.getElementById('skipButton').disabled = true;
-                }
+        // التحقق من الدور الحالي وتفعيل/تعطيل الأزرار بناءً عليه
+        const currentTurn = gameData.currentTurn; // "teamOne" أو "teamTwo"
+        
+        console.log(`الدور الحالي: ${currentTurn}, الفريق الحالي: ${team}`);
 
-            } else {
-                console.log("Game document not found!");
-            }
-        }, (error) => {
-            console.error("Error getting game document:", error);
-        });
+        if (currentTurn === team) {
+            document.getElementById('answerButton').disabled = false;
+            document.getElementById('skipButton').disabled = false;
+            console.log("تم تمكين الأزرار للفريق الحالي.");
+        } else {
+            document.getElementById('answerButton').disabled = true;
+            document.getElementById('skipButton').disabled = true;
+            console.log("تم تعطيل الأزرار لأن الدور ليس للفريق الحالي.");
+        }
+    } else {
+        console.log("Game document not found!");
+    }
+}, (error) => {
+    console.error("Error getting game document:", error);
+});
+
 
         function submitAnswer() {
             if (!gameId || !team || !userName) {
