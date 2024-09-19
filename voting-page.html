@@ -133,7 +133,7 @@
 
 <body>
     <header>
-        <h1>التصويت للسؤالs الحالي</h1>
+        <h1>التصويت للسؤال الحالي</h1>
     </header>
 
     <div class="scores">
@@ -347,7 +347,7 @@ function submitSkip() {
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
         document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-        loadNextQuestion("الفئة_المحددة"); // تغيير السؤال فورًا عند التخطي وإعطاء الفئة
+        loadNextQuestion("t7de"); // تغيير السؤال فورًا عند التخطي وإعطاء الفئة
     }).catch((error) => {
         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
         console.error('Error saving skip action:', error);
