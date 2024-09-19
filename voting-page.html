@@ -177,6 +177,8 @@
         </div>
 
         <button id="voteButton" onclick="vote()" disabled>تصويت</button>
+        <button id="answerButton" onclick="submitAnswer()" disabled>الإجابة</button>
+        <button id="skipButton" onclick="submitSkip()" disabled>التخطي</button>
 
         <p id="voteResult"></p>
     </div>
@@ -264,6 +266,8 @@
                     initialLoad = false;
 
                     document.getElementById('voteButton').disabled = category === '...';
+                    document.getElementById('answerButton').disabled = category === '...';
+                    document.getElementById('skipButton').disabled = category === '...';
                 } else {
                     console.log("No such document!");
                 }
@@ -302,6 +306,48 @@
             }).catch((error) => {
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
                 voteButton.disabled = false;
+            });
+        }
+
+        function submitAnswer() {
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+                return;
+            }
+
+            const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
+
+            answerRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم تسجيل الإجابة بالفعل بواسطة ${doc.data().team}.`;
+                } else {
+                    answerRef.set({ team: team, userName: userName, action: "answer" }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
+                    });
+                }
+            });
+        }
+
+        function submitSkip() {
+            if (!gameId || !team || !userName) {
+                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
+                return;
+            }
+
+            const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
+
+            skipRef.get().then((doc) => {
+                if (doc.exists) {
+                    document.getElementById('voteResult').innerText = `تم تسجيل التخطي بالفعل بواسطة ${doc.data().team}.`;
+                } else {
+                    skipRef.set({ team: team, userName: userName, action: "skip" }).then(() => {
+                        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
+                    }).catch((error) => {
+                        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
+                    });
+                }
             });
         }
 
