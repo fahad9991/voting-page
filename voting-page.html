@@ -178,10 +178,15 @@
         const userName = urlParams.get('userName');
 
         const firebaseConfig = {
-            apiKey: "API_KEY",
+            apiKey: "AIzaSyCalPSOGndsWNRXCS2MWFZ_vaeSXEQVqlE",
             authDomain: "triviakw-dfe7f.firebaseapp.com",
-            projectId: "triviakw-dfe7f"
+            databaseURL: "https://triviakw-dfe7f-default-rtdb.firebaseio.com",
+            projectId: "triviakw-dfe7f",
+            storageBucket: "triviakw-dfe7f.appspot.com",
+            messagingSenderId: "274369788646",
+            appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
+
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
