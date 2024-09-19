@@ -256,11 +256,9 @@ db.collection("games").doc(gameId).collection("challengeState").doc(userName)
         if (doc.exists) {
             const data = doc.data();
             if (data.inChallenge === true) {
-                // تم تفعيل التحدي، قم بتفعيل الأزرار
                 document.getElementById('answerButton').disabled = false;
                 document.getElementById('skipButton').disabled = false;
             } else {
-                // لم يبدأ التحدي، الأزرار تظل معطلة
                 document.getElementById('answerButton').disabled = true;
                 document.getElementById('skipButton').disabled = true;
             }
@@ -268,6 +266,7 @@ db.collection("games").doc(gameId).collection("challengeState").doc(userName)
             console.log("لم يتم العثور على حالة التحدي.");
         }
     });
+
 
 
         db.collection("games").doc(gameId).onSnapshot((doc) => {
@@ -284,34 +283,28 @@ db.collection("games").doc(gameId).collection("challengeState").doc(userName)
         let initialLoad = true;
 
         db.collection("games").doc(gameId).collection("currentQuestion").doc("questionData")
-            .onSnapshot((doc) => {
-                if (doc.exists) {
-                    const data = doc.data();
-                    const points = data.points || '...';
-                    const category = data.category || '...';
+    .onSnapshot((doc) => {
+        if (doc.exists) {
+            const data = doc.data();
+            const points = data.points || '...';
+            const category = data.category || '...';
 
-                    document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
-                    document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
+            document.getElementById('questionPoints').innerText = `قيمة السؤال: ${points} نقطة`;
+            document.getElementById('questionCategory').innerText = `فئة السؤال: ${category}`;
 
-                    if (category !== currentCategory) {
-                        currentCategory = category;
-                        if (!initialLoad) {
-                            db.collection("games").doc(gameId).get().then((doc) => {
-                                if (doc.exists) {
-                                    updateScores(doc.data());
-                                }
-                            });
-                        }
-                    }
-                    initialLoad = false;
+            // تفعيل زر التصويت فقط عندما يتم جلب بيانات السؤال
+            if (category !== '...' && points !== '...') {
+                document.getElementById('voteButton').disabled = false;
+            } else {
+                document.getElementById('voteButton').disabled = true;
+            }
+        } else {
+            console.log("No such document!");
+        }
+    }, (error) => {
+        console.error("Error getting document:", error);
+    });
 
-                    document.getElementById('voteButton').disabled = category === '...';
-                } else {
-                    console.log("No such document!");
-                }
-            }, (error) => {
-                console.error("Error getting document:", error);
-            });
 
         function vote() {
             if (!gameId || !team || !userName) {
