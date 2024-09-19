@@ -271,9 +271,7 @@
                         document.getElementById('voteResult').innerText = 'تم التصويت بنجاح!';
                         disableVoteButton();
 
-                        setTimeout(() => {
-                            location.reload();
-                        }, 2000);
+                        
 
                     }).catch((error) => {
                         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التصويت. يرجى المحاولة مجددًا.';
@@ -324,15 +322,14 @@
                 db.collection("games").doc(gameId).update({
                     currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
                 });
-                setTimeout(() => {
-                    location.reload();
+             
                 }, 2000);
             }).catch((error) => {
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
             });
         }
 
-        function submitSkip() {
+function submitSkip() {
     if (!gameId || !team || !userName) {
         document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
         return;
@@ -350,17 +347,37 @@
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
         document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-
-        // لا حاجة لخصم الوقت في قاعدة البيانات، التطبيق يقوم بذلك
-        setTimeout(() => {
-            location.reload();
-        }, 2000);
+        // لا حاجة لإعادة تحميل الصفحة، سيتم تحديث البيانات من Firestore
     }).catch((error) => {
         document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
         console.error('Error saving skip action:', error);
     });
 }
 
+
+// الاستماع لتغييرات الأحداث
+db.collection("games").doc(gameId).collection("actions").onSnapshot((snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+        if (change.type === "added") {
+            const data = change.doc.data();
+            if (data.action === "skip") {
+                handleSkipAction(data);
+            } else if (data.action === "answer") {
+                handleAnswerAction(data);
+            }
+        }
+    });
+});
+
+function handleSkipAction(data) {
+    // تحديث واجهة المستخدم لعرض التغييرات بناءً على حدث التخطي
+    document.getElementById('voteResult').innerText = `تم التخطي من قبل ${data.userName}!`;
+}
+
+function handleAnswerAction(data) {
+    // تحديث واجهة المستخدم لعرض التغييرات بناءً على حدث الإجابة
+    document.getElementById('voteResult').innerText = `تم الإجابة من قبل ${data.userName}!`;
+}
 
 
         function disableVoteButton() {
