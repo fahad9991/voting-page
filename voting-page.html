@@ -157,9 +157,8 @@
             <p id="questionPoints">قيمة السؤال: ... نقطة</p>
         </div>
 
+        <!-- زر التصويت فقط -->
         <button id="voteButton" onclick="vote()" disabled>تصويت</button>
-        <button id="answerButton" onclick="submitAnswer()" disabled>الإجابة</button>
-        <button id="skipButton" onclick="submitSkip()" disabled>التخطي</button>
 
         <p id="voteResult"></p>
     </div>
@@ -186,7 +185,6 @@
             messagingSenderId: "274369788646",
             appId: "1:274369788646:web:76b8cae5bcf9d404fd1927"
         };
-
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
@@ -248,8 +246,6 @@
                     initialLoad = false;
 
                     document.getElementById('voteButton').disabled = category === '...';
-                    document.getElementById('answerButton').disabled = category === '...';
-                    document.getElementById('skipButton').disabled = category === '...';
                 } else {
                     console.log("No such document!");
                 }
@@ -284,124 +280,6 @@
                 document.getElementById('voteResult').innerText = 'حدث خطأ أثناء التحقق من التصويت. يرجى المحاولة مجددًا.';
                 voteButton.disabled = false;
             });
-        }
-
-        function clearPreviousAction() {
-            // مسح فقط الأحداث المتعلقة بـ "answer" و "skip"
-            const actionsRef = db.collection("games").doc(gameId).collection("actions").where("action", "in", ["answer", "skip"]);
-
-            actionsRef.get().then(snapshot => {
-                snapshot.forEach(doc => {
-                    doc.ref.delete().then(() => {
-                        console.log("تم مسح الحدث السابق.");
-                    }).catch(error => {
-                        console.error("خطأ أثناء مسح الحدث السابق:", error);
-                    });
-                });
-            }).catch(error => {
-                console.error("خطأ أثناء التحقق من الأحداث:", error);
-            });
-        }
-
-        function submitAnswer() {
-            if (!gameId || !team || !userName) {
-                document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-                return;
-            }
-
-            clearPreviousAction(); // مسح الحدث السابق المتعلق بالإجابة
-
-            const answerRef = db.collection("games").doc(gameId).collection("actions").doc("answer");
-
-            answerRef.set({
-                team: team, 
-                userName: userName, 
-                action: "answer", 
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(() => {
-                document.getElementById('voteResult').innerText = 'تم تسجيل الإجابة بنجاح!';
-                // تحديث الدور للفريق الآخر
-                db.collection("games").doc(gameId).update({
-                    currentTurn: team === "teamOne" ? "teamTwo" : "teamOne"
-                });
-            }).catch((error) => {
-                document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل الإجابة.';
-            });
-        }
-
-function submitSkip() {
-    if (!gameId || !team || !userName) {
-        document.getElementById('voteResult').innerText = 'بيانات غير مكتملة.';
-        return;
-    }
-
-    // مسح الأحداث السابقة المتعلقة بالتخطي
-    clearPreviousAction();
-
-    const skipRef = db.collection("games").doc(gameId).collection("actions").doc("skip");
-
-    skipRef.set({
-        team: team,
-        userName: userName,
-        action: "skip",
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-        document.getElementById('voteResult').innerText = 'تم تسجيل التخطي بنجاح!';
-        loadNextQuestion("t7de"); // تغيير السؤال فورًا عند التخطي وإعطاء الفئة
-    }).catch((error) => {
-        document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تسجيل التخطي.';
-        console.error('Error saving skip action:', error);
-    });
-}
-
-function loadNextQuestion(category) {
-    db.collection("games").doc(gameId).collection("questions")
-        .where("category", "==", category) // جلب الأسئلة بناءً على الفئة المحددة
-        .orderBy("timestamp") // ترتيب الأسئلة حسب الوقت أو أي معيار آخر
-        .limit(1)
-        .get()
-        .then(snapshot => {
-            if (!snapshot.empty) {
-                const questionData = snapshot.docs[0].data();
-                document.getElementById('questionCategory').innerText = `فئة السؤال: ${questionData.category}`;
-                document.getElementById('questionPoints').innerText = `قيمة السؤال: ${questionData.points} نقطة`;
-
-                // لا حذف للسؤال بعد عرضه
-            } else {
-                document.getElementById('voteResult').innerText = 'لا توجد أسئلة متبقية.';
-            }
-        })
-        .catch(error => {
-            document.getElementById('voteResult').innerText = 'حدث خطأ أثناء تحميل السؤال التالي.';
-            console.error('Error loading next question:', error);
-        });
-}
-
-
-
-
-        // الاستماع لتغييرات الأحداث
-        db.collection("games").doc(gameId).collection("actions").onSnapshot((snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    const data = change.doc.data();
-                    if (data.action === "skip") {
-                        handleSkipAction(data);
-                    } else if (data.action === "answer") {
-                        handleAnswerAction(data);
-                    }
-                }
-            });
-        });
-
-        function handleSkipAction(data) {
-            // تحديث واجهة المستخدم لعرض التغييرات بناءً على حدث التخطي
-            document.getElementById('voteResult').innerText = `تم التخطي من قبل ${data.userName}!`;
-        }
-
-        function handleAnswerAction(data) {
-            // تحديث واجهة المستخدم لعرض التغييرات بناءً على حدث الإجابة
-            document.getElementById('voteResult').innerText = `تم الإجابة من قبل ${data.userName}!`;
         }
 
         function disableVoteButton() {
